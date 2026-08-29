@@ -1,424 +1,381 @@
-const fileInput = document.getElementById("fileInput");
-const chooseBtn = document.getElementById("chooseBtn");
-const dropZone = document.getElementById("dropZone");
+/* =========================================================
+   TEXTILE VECTOR STUDIO
+   Main Application
+========================================================= */
 
-const editor = document.getElementById("editor");
 
-const originalImage = document.getElementById("originalImage");
-const vectorPreview = document.getElementById("vectorPreview");
+/* =========================================================
+   DOM
+========================================================= */
 
-const convertBtn = document.getElementById("convertBtn");
+const fileInput =
+    document.getElementById("fileInput");
 
-const downloadSvgBtn =
-    document.getElementById("downloadSvgBtn");
+const browseButton =
+    document.getElementById("browseButton");
 
-const downloadPngBtn =
-    document.getElementById("downloadPngBtn");
+const emptyUploadButton =
+    document.getElementById("emptyUploadButton");
 
-const resetBtn =
-    document.getElementById("resetBtn");
+const dropZone =
+    document.getElementById("dropZone");
 
-const status =
-    document.getElementById("status");
+const emptyState =
+    document.getElementById("emptyState");
+
+const originalPreview =
+    document.getElementById("originalPreview");
+
+const vectorPreview =
+    document.getElementById("vectorPreview");
+
+const patternPreview =
+    document.getElementById("patternPreview");
+
+const previewStage =
+    document.getElementById("previewStage");
+
+const canvasWrapper =
+    document.getElementById("canvasWrapper");
+
+const gridOverlay =
+    document.getElementById("gridOverlay");
+
+const artworkThumb =
+    document.getElementById("artworkThumb");
+
+const artworkName =
+    document.getElementById("artworkName");
+
+const artworkDimensions =
+    document.getElementById("artworkDimensions");
+
+const imageInfo =
+    document.getElementById("imageInfo");
+
+const processingInfo =
+    document.getElementById("processingInfo");
+
+const appStatus =
+    document.getElementById("appStatus");
+
+const toast =
+    document.getElementById("toast");
+
+const toastMessage =
+    document.getElementById("toastMessage");
+
+
+/* =========================================================
+   CONTROLS
+========================================================= */
+
+const brightness =
+    document.getElementById("brightness");
+
+const contrast =
+    document.getElementById("contrast");
+
+const brightnessValue =
+    document.getElementById("brightnessValue");
+
+const contrastValue =
+    document.getElementById("contrastValue");
 
 const colorCount =
     document.getElementById("colorCount");
 
-const colorValue =
-    document.getElementById("colorValue");
+const colorCountValue =
+    document.getElementById("colorCountValue");
 
-const detailLevel =
-    document.getElementById("detailLevel");
+const smoothness =
+    document.getElementById("smoothness");
 
-const tileSize =
-    document.getElementById("tileSize");
+const smoothnessValue =
+    document.getElementById("smoothnessValue");
+
+const detail =
+    document.getElementById("detail");
+
+const colorMode =
+    document.getElementById("colorMode");
 
 
-let currentImage = null;
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+const convertButton =
+    document.getElementById("convertButton");
+
+const backgroundButton =
+    document.getElementById("backgroundButton");
+
+const bwButton =
+    document.getElementById("bwButton");
+
+const rotateButton =
+    document.getElementById("rotateButton");
+
+const cropButton =
+    document.getElementById("cropButton");
+
+const resetButton =
+    document.getElementById("resetButton");
+
+const newDesignBtn =
+    document.getElementById("newDesignBtn");
+
+
+/* =========================================================
+   EXPORT BUTTONS
+========================================================= */
+
+const downloadSvg =
+    document.getElementById("downloadSvg");
+
+const downloadPng =
+    document.getElementById("downloadPng");
+
+const downloadHighPng =
+    document.getElementById("downloadHighPng");
+
+const downloadPdf =
+    document.getElementById("downloadPdf");
+
+const downloadDxf =
+    document.getElementById("downloadDxf");
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let sourceImage = null;
+
+let sourceFileName =
+    "textile-artwork";
+
+let originalDataUrl = null;
+
+let processedDataUrl = null;
+
 let currentSvg = null;
 
+let currentImageWidth = 0;
 
-/* -----------------------------
-   Choose Image
------------------------------ */
+let currentImageHeight = 0;
 
-chooseBtn.addEventListener("click", () => {
-    fileInput.click();
-});
+let rotation = 0;
 
+let zoom = 1;
 
-fileInput.addEventListener("change", (event) => {
+let panMode = false;
 
-    const file = event.target.files[0];
+let isDragging = false;
 
-    if (file) {
-        loadImage(file);
-    }
+let dragStartX = 0;
 
-});
+let dragStartY = 0;
 
+let panX = 0;
 
-/* -----------------------------
-   Drag & Drop
------------------------------ */
+let panY = 0;
 
-dropZone.addEventListener("dragover", (event) => {
+let currentRepeat = "straight";
 
-    event.preventDefault();
+let currentRepeatSize = 1;
 
-    dropZone.classList.add("dragover");
+let gridEnabled = false;
 
-});
+let blackWhiteEnabled = false;
 
+let backgroundRemoved = false;
 
-dropZone.addEventListener("dragleave", () => {
 
-    dropZone.classList.remove("dragover");
+/* =========================================================
+   IMAGE PROCESSING CANVAS
+========================================================= */
 
-});
+const processingCanvas =
+    document.createElement("canvas");
 
+const processingContext =
+    processingCanvas.getContext("2d");
 
-dropZone.addEventListener("drop", (event) => {
 
-    event.preventDefault();
+/* =========================================================
+   INITIAL VIEW
+========================================================= */
 
-    dropZone.classList.remove("dragover");
+previewStage.classList.add(
+    "show-original"
+);
 
-    const file = event.dataTransfer.files[0];
 
-    if (file && file.type.startsWith("image/")) {
-        loadImage(file);
-    }
+/* =========================================================
+   FILE UPLOAD
+========================================================= */
 
-});
-
-
-/* -----------------------------
-   Load Image
------------------------------ */
-
-function loadImage(file) {
-
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-
-        originalImage.src = event.target.result;
-
-        currentImage = event.target.result;
-
-        editor.classList.remove("hidden");
-
-        vectorPreview.innerHTML =
-            "<span>Click Convert to Vector</span>";
-
-        currentSvg = null;
-
-        downloadSvgBtn.disabled = true;
-        downloadPngBtn.disabled = true;
-
-        status.textContent =
-            "Image loaded. Ready to convert.";
-
-    };
-
-    reader.readAsDataURL(file);
-
-}
-
-
-/* -----------------------------
-   Color slider
------------------------------ */
-
-colorCount.addEventListener("input", () => {
-
-    colorValue.textContent =
-        colorCount.value;
-
-});
-
-
-/* -----------------------------
-   Convert to Vector
------------------------------ */
-
-convertBtn.addEventListener("click", () => {
-
-    if (!currentImage) {
-
-        status.textContent =
-            "Please upload an image first.";
-
-        return;
-    }
-
-
-    status.textContent =
-        "Converting image to vector...";
-
-    convertBtn.disabled = true;
-
-
-    const colors =
-        parseInt(colorCount.value);
-
-
-    let pathomit = 8;
-
-    if (detailLevel.value === "low") {
-        pathomit = 20;
-    }
-
-    if (detailLevel.value === "medium") {
-        pathomit = 8;
-    }
-
-    if (detailLevel.value === "high") {
-        pathomit = 2;
-    }
-
-
-    const options = {
-
-        ltres: 1,
-        qtres: 1,
-
-        pathomit: pathomit,
-
-        numberofcolors: colors,
-
-        colorsampling: 2,
-
-        strokewidth: 0,
-
-        blurradius: 0,
-
-        blurdelta: 20
-
-    };
-
-
-    ImageTracer.imageToSVG(
-
-        currentImage,
-
-        function(svg) {
-
-            currentSvg = svg;
-
-            showVector(svg);
-
-            downloadSvgBtn.disabled = false;
-
-            downloadPngBtn.disabled = false;
-
-            convertBtn.disabled = false;
-
-            status.textContent =
-                "Vector conversion completed.";
-
-        },
-
-        options
-
-    );
-
-});
-
-
-/* -----------------------------
-   Show Vector
------------------------------ */
-
-function showVector(svg) {
-
-    let finalSvg = svg;
-
-
-    const repeat =
-        tileSize.value;
-
-
-    if (repeat !== "none") {
-
-        finalSvg =
-            createRepeatPattern(svg, repeat);
-
-    }
-
-
-    vectorPreview.innerHTML =
-        finalSvg;
-
-}
-
-
-/* -----------------------------
-   Textile Repeat
------------------------------ */
-
-function createRepeatPattern(svg, repeat) {
-
-    const parser =
-        new DOMParser();
-
-    const doc =
-        parser.parseFromString(
-            svg,
-            "image/svg+xml"
-        );
-
-
-    const original =
-        doc.documentElement;
-
-
-    const width =
-        original.getAttribute("width");
-
-    const height =
-        original.getAttribute("height");
-
-
-    let copies = "";
-
-
-    const n =
-        parseInt(repeat);
-
-
-    for (let y = 0; y < n; y++) {
-
-        for (let x = 0; x < n; x++) {
-
-            copies += `
-                <g transform="translate(${x * 100}, ${y * 100})">
-                    ${original.innerHTML}
-                </g>
-            `;
-
-        }
-
-    }
-
-
-    return `
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 ${n * 100} ${n * 100}"
-            width="${width || "500"}"
-            height="${height || "500"}"
-        >
-            ${copies}
-        </svg>
-    `;
-
-}
-
-
-/* -----------------------------
-   Download SVG
------------------------------ */
-
-downloadSvgBtn.addEventListener(
+browseButton.addEventListener(
     "click",
-    () => {
-
-        if (!currentSvg) {
-            return;
-        }
+    () => fileInput.click()
+);
 
 
-        const blob =
-            new Blob(
-                [currentSvg],
-                {
-                    type:
-                        "image/svg+xml"
-                }
-            );
+emptyUploadButton.addEventListener(
+    "click",
+    () => fileInput.click()
+);
 
 
-        const url =
-            URL.createObjectURL(blob);
+dropZone.addEventListener(
+    "dragover",
+    event => {
 
+        event.preventDefault();
 
-        const link =
-            document.createElement("a");
-
-
-        link.href = url;
-
-        link.download =
-            "textile-vector.svg";
-
-
-        link.click();
-
-
-        URL.revokeObjectURL(url);
+        dropZone.classList.add(
+            "dragover"
+        );
 
     }
 );
 
 
-/* -----------------------------
-   Download PNG
------------------------------ */
-
-downloadPngBtn.addEventListener(
-    "click",
+dropZone.addEventListener(
+    "dragleave",
     () => {
 
-        if (!currentSvg) {
-            return;
+        dropZone.classList.remove(
+            "dragover"
+        );
+
+    }
+);
+
+
+dropZone.addEventListener(
+    "drop",
+    event => {
+
+        event.preventDefault();
+
+        dropZone.classList.remove(
+            "dragover"
+        );
+
+        const file =
+            event.dataTransfer.files[0];
+
+        if (isValidImage(file)) {
+
+            loadImage(file);
+
         }
 
-
-        const svgBlob =
-            new Blob(
-                [currentSvg],
-                {
-                    type:
-                        "image/svg+xml"
-                }
-            );
+    }
+);
 
 
-        const url =
-            URL.createObjectURL(svgBlob);
+fileInput.addEventListener(
+    "change",
+    event => {
 
+        const file =
+            event.target.files[0];
+
+        if (isValidImage(file)) {
+
+            loadImage(file);
+
+        }
+
+    }
+);
+
+
+function isValidImage(file) {
+
+    if (!file) {
+        return false;
+    }
+
+    if (!file.type.startsWith("image/")) {
+
+        showToast(
+            "Please upload a JPG, PNG or WEBP image."
+        );
+
+        return false;
+
+    }
+
+    return true;
+}
+
+
+/* =========================================================
+   LOAD IMAGE
+========================================================= */
+
+function loadImage(file) {
+
+    sourceFileName =
+        file.name.replace(
+            /\.[^/.]+$/,
+            ""
+        );
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload = event => {
 
         const img =
             new Image();
 
 
-        img.onload = function() {
+        img.onload = () => {
 
-            const canvas =
-                document.createElement("canvas");
+            sourceImage = img;
 
+            currentImageWidth =
+                img.naturalWidth;
 
-            canvas.width =
-                img.width || 1000;
-
-            canvas.height =
-                img.height || 1000;
+            currentImageHeight =
+                img.naturalHeight;
 
 
-            const ctx =
-                canvas.getContext("2d");
+            originalDataUrl =
+                event.target.result;
+
+            processedDataUrl =
+                originalDataUrl;
 
 
-            ctx.drawImage(
-                img,
-                0,
-                0
-            );
+            rotation = 0;
+
+            zoom = 1;
+
+            panX = 0;
+
+            panY = 0;
+
+            currentSvg = null;
+
+            blackWhiteEnabled = false;
+
+            backgroundRemoved = false;
 
 
-            canvas.toBlob(
-                function(blob) {
+            brightness.value = 0;
 
-                    const png
+            contrast.value = 0;
+
+            brightnessValue.textContent =
+                "0";
+
+            cont
