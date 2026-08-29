@@ -1,1 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Textile Vector Studio</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- ImageTracer.js -->
+    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="logo">
+        <span>◆</span> Textile Vector Studio
+    </div>
+
+    <div class="company">
+        Textile Design Tool
+    </div>
+</header>
+
+
+<main class="container">
+
+    <section class="hero">
+        <h1>Photo to Vector</h1>
+
+        <p>
+            Convert textile artwork, fabric patterns and photos
+            into editable vector designs.
+        </p>
+    </section>
+
+
+    <!-- Upload Area -->
+    <section class="upload-section">
+
+        <div id="dropZone" class="drop-zone">
+
+            <div class="upload-icon">↑</div>
+
+            <h2>Upload your textile design</h2>
+
+            <p>
+                Drag & drop an image here
+                or choose a file
+            </p>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                hidden
+            >
+
+            <button
+                id="chooseBtn"
+                class="primary-btn"
+            >
+                Choose Image
+            </button>
+
+            <small>
+                JPG, PNG, WEBP supported
+            </small>
+
+        </div>
+
+    </section>
+
+
+    <!-- Editor -->
+    <section
+        id="editor"
+        class="editor hidden"
+    >
+
+        <div class="preview-area">
+
+            <div class="preview-card">
+
+                <div class="card-title">
+                    Original Image
+                </div>
+
+                <div class="image-container">
+                    <img
+                        id="originalImage"
+                        alt="Original textile design"
+                    >
+                </div>
+
+            </div>
+
+
+            <div class="arrow">
+                →
+            </div>
+
+
+            <div class="preview-card">
+
+                <div class="card-title">
+                    Vector Preview
+                </div>
+
+                <div
+                    id="vectorPreview"
+                    class="vector-container"
+                >
+                    <span>
+                        Vector preview will appear here
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Controls -->
+        <div class="controls">
+
+            <div class="control-group">
+
+                <label for="colorCount">
+                    Number of Colors
+                </label>
+
+                <input
+                    type="range"
+                    id="colorCount"
+                    min="2"
+                    max="32"
+                    value="8"
+                >
+
+                <span id="colorValue">8</span>
+
+            </div>
+
+
+            <div class="control-group">
+
+                <label for="detailLevel">
+                    Detail Level
+                </label>
+
+                <select id="detailLevel">
+
+                    <option value="low">
+                        Low
+                    </option>
+
+                    <option value="medium" selected>
+                        Medium
+                    </option>
+
+                    <option value="high">
+                        High
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="control-group">
+
+                <label for="tileSize">
+                    Textile Repeat
+                </label>
+
+                <select id="tileSize">
+
+                    <option value="none">
+                        No Repeat
+                    </option>
+
+                    <option value="2">
+                        2 × 2
+                    </option>
+
+                    <option value="3">
+                        3 × 3
+                    </option>
+
+                    <option value="4">
+                        4 × 4
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- Buttons -->
+        <div class="actions">
+
+            <button
+                id="convertBtn"
+                class="primary-btn"
+            >
+                Convert to Vector
+            </button>
+
+            <button
+                id="downloadSvgBtn"
+                class="secondary-btn"
+                disabled
+            >
+                Download SVG
+            </button>
+
+            <button
+                id="downloadPngBtn"
+                class="secondary-btn"
+                disabled
+            >
+                Download PNG
+            </button>
+
+            <button
+                id="resetBtn"
+                class="danger-btn"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <!-- Status -->
+        <div
+            id="status"
+            class="status"
+        >
+            Ready
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <p>
+        Textile Vector Studio © 2026
+    </p>
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
