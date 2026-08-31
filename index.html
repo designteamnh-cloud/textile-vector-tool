@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -12,466 +14,620 @@
 
     <meta
         name="description"
-        content="Professional photo to vector conversion tool for textile designers."
+        content="Professional textile photo to SVG vector converter."
     >
 
     <link
         rel="stylesheet"
         href="style.css"
     >
+
 </head>
+
 
 <body>
 
-    <!-- ================= HEADER ================= -->
 
-    <header class="topbar">
+<!-- ==================================================
+     HEADER
+================================================== -->
 
-        <div class="brand">
-            <div class="brand-mark">TV</div>
+<header class="topbar">
 
-            <div>
-                <h1>Textile Vector Studio</h1>
-                <span>Photo → Clean SVG Vector</span>
-            </div>
+    <div class="brand">
+
+        <div class="brand-logo">
+            TV
         </div>
 
-        <div class="header-status">
-            <span class="status-dot"></span>
-            Browser Processing
+        <div class="brand-text">
+
+            <h1>
+                Textile Vector Studio
+            </h1>
+
+            <span>
+                Photo → Clean SVG Vector
+            </span>
+
         </div>
 
-    </header>
+    </div>
 
 
-    <!-- ================= MAIN ================= -->
+    <div class="browser-status">
 
-    <main class="app-container">
+        <span class="status-dot"></span>
 
-        <!-- HERO -->
+        Browser Processing
 
-        <section class="hero">
+    </div>
 
-            <div>
-                <p class="eyebrow">TEXTILE DESIGN TOOL</p>
+</header>
 
-                <h2>
-                    Turn your textile artwork
-                    into editable vector SVG
-                </h2>
 
-                <p class="hero-description">
-                    Upload your artwork, adjust vector settings,
-                    preview the result and download a clean SVG
-                    file for Illustrator, CorelDRAW and other
-                    vector software.
-                </p>
+
+<!-- ==================================================
+     MAIN
+================================================== -->
+
+<main class="container">
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="eyebrow">
+            TEXTILE DESIGN TOOL
+        </div>
+
+
+        <h2>
+            Convert textile artwork
+            into clean SVG vector
+        </h2>
+
+
+        <p>
+
+            Upload your artwork, adjust the vector
+            settings, preview the result and download
+            a clean SVG file for Illustrator,
+            CorelDRAW and other vector software.
+
+        </p>
+
+    </section>
+
+
+
+    <!-- ==================================================
+         WORKSPACE
+    ================================================== -->
+
+    <section class="workspace">
+
+
+        <!-- ==================================================
+             LEFT PANEL
+        ================================================== -->
+
+        <aside class="sidebar">
+
+
+            <div class="panel-heading">
+
+                <h3>
+                    Vector Settings
+                </h3>
+
+
+                <button
+                    id="resetBtn"
+                    class="reset-button"
+                    type="button"
+                >
+                    Reset
+                </button>
+
             </div>
 
-        </section>
 
 
-        <!-- ================= WORKSPACE ================= -->
+            <!-- ==================================================
+                 UPLOAD
+            ================================================== -->
 
-        <section class="workspace">
+            <div
+                id="dropZone"
+                class="upload-zone"
+            >
 
-            <!-- LEFT CONTROL PANEL -->
-
-            <aside class="control-panel">
-
-                <div class="panel-title">
-                    <h3>Vector Settings</h3>
-
-                    <button
-                        id="resetBtn"
-                        class="text-button"
-                    >
-                        Reset
-                    </button>
-                </div>
-
-
-                <!-- Upload -->
-
-                <div
-                    id="dropZone"
-                    class="upload-zone"
+                <input
+                    id="fileInput"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    hidden
                 >
 
-                    <input
-                        type="file"
-                        id="fileInput"
-                        accept="image/png,image/jpeg,image/webp"
-                        hidden
-                    >
 
-                    <div class="upload-icon">
-                        ↑
-                    </div>
-
-                    <h4>Upload Artwork</h4>
-
-                    <p>
-                        Drag & drop your image here
-                    </p>
-
-                    <button
-                        id="browseBtn"
-                        class="primary-button"
-                    >
-                        Browse Image
-                    </button>
-
-                    <small>
-                        JPG, PNG or WEBP · Max 20 MB
-                    </small>
-
+                <div class="upload-icon">
+                    ↑
                 </div>
 
 
-                <!-- Settings -->
-
-                <div class="settings">
-
-                    <!-- Color Count -->
-
-                    <div class="setting">
-
-                        <div class="setting-label">
-
-                            <label for="colorCount">
-                                Colors
-                            </label>
-
-                            <span id="colorValue">
-                                16
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="range"
-                            id="colorCount"
-                            min="2"
-                            max="32"
-                            value="16"
-                        >
-
-                        <div class="range-info">
-                            <span>2</span>
-                            <span>32</span>
-                        </div>
-
-                    </div>
+                <h4>
+                    Upload Artwork
+                </h4>
 
 
-                    <!-- Detail -->
-
-                    <div class="setting">
-
-                        <div class="setting-label">
-
-                            <label for="detail">
-                                Detail
-                            </label>
-
-                            <span id="detailValue">
-                                5
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="range"
-                            id="detail"
-                            min="1"
-                            max="10"
-                            value="5"
-                        >
-
-                        <div class="range-info">
-                            <span>Simple</span>
-                            <span>Detailed</span>
-                        </div>
-
-                    </div>
+                <p>
+                    Drag & drop your image here
+                </p>
 
 
-                    <!-- Simplify -->
-
-                    <div class="setting">
-
-                        <div class="setting-label">
-
-                            <label for="simplify">
-                                Simplification
-                            </label>
-
-                            <span id="simplifyValue">
-                                1
-                            </span>
-
-                        </div>
-
-                        <input
-                            type="range"
-                            id="simplify"
-                            min="0"
-                            max="10"
-                            value="1"
-                        >
-
-                        <div class="range-info">
-                            <span>Precise</span>
-                            <span>Smooth</span>
-                        </div>
-
-                    </div>
+                <button
+                    id="browseBtn"
+                    type="button"
+                    class="browse-button"
+                >
+                    Browse Image
+                </button>
 
 
-                    <!-- Vector Mode -->
+                <small>
+                    JPG, PNG, WEBP · Maximum 20 MB
+                </small>
 
-                    <div class="setting">
+            </div>
 
-                        <label class="setting-heading">
-                            Vector Mode
+
+
+            <!-- ==================================================
+                 SETTINGS
+            ================================================== -->
+
+            <div class="settings">
+
+
+                <!-- COLORS -->
+
+                <div class="setting">
+
+                    <div class="setting-top">
+
+                        <label for="colorCount">
+                            Colors
                         </label>
 
-                        <div class="mode-buttons">
-
-                            <button
-                                class="mode-button active"
-                                data-mode="color"
-                            >
-                                Color
-                            </button>
-
-                            <button
-                                class="mode-button"
-                                data-mode="bw"
-                            >
-                                Black & White
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Generate -->
-
-                <button
-                    id="vectorizeBtn"
-                    class="generate-button"
-                    disabled
-                >
-                    <span>Convert to Vector</span>
-                    <span>→</span>
-                </button>
-
-
-                <!-- Download -->
-
-                <button
-                    id="downloadBtn"
-                    class="download-button"
-                    disabled
-                >
-                    Download SVG
-                </button>
-
-            </aside>
-
-
-            <!-- ================= PREVIEW ================= -->
-
-            <section class="preview-area">
-
-                <div class="preview-header">
-
-                    <div>
-                        <h3>Artwork Preview</h3>
-
-                        <span id="fileInfo">
-                            No image uploaded
+                        <span id="colorValue">
+                            16
                         </span>
+
                     </div>
 
-                    <div
-                        id="processingStatus"
-                        class="processing-status"
+
+                    <input
+                        id="colorCount"
+                        type="range"
+                        min="2"
+                        max="32"
+                        value="16"
                     >
-                        Ready
-                    </div>
-
-                </div>
 
 
-                <div class="preview-grid">
-
-                    <!-- ORIGINAL -->
-
-                    <div class="preview-card">
-
-                        <div class="card-header">
-
-                            <span>ORIGINAL</span>
-
-                            <span id="originalSize">
-                                —
-                            </span>
-
-                        </div>
-
-                        <div
-                            id="originalPreview"
-                            class="image-preview empty"
-                        >
-
-                            <div class="empty-state">
-
-                                <div class="empty-icon">
-                                    +
-                                </div>
-
-                                <p>
-                                    Upload an image
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- VECTOR -->
-
-                    <div class="preview-card">
-
-                        <div class="card-header">
-
-                            <span>VECTOR SVG</span>
-
-                            <span id="vectorSize">
-                                —
-                            </span>
-
-                        </div>
-
-                        <div
-                            id="vectorPreview"
-                            class="image-preview empty"
-                        >
-
-                            <div class="empty-state">
-
-                                <div class="empty-icon">
-                                    ◇
-                                </div>
-
-                                <p>
-                                    Vector preview will appear here
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Progress -->
-
-                <div
-                    id="progressContainer"
-                    class="progress-container hidden"
-                >
-
-                    <div class="progress-top">
+                    <div class="range-labels">
 
                         <span>
-                            Creating vector paths...
+                            2
                         </span>
 
-                        <span id="progressText">
-                            0%
+                        <span>
+                            32
                         </span>
-
-                    </div>
-
-                    <div class="progress-bar">
-
-                        <div
-                            id="progressBar"
-                            class="progress-fill"
-                        ></div>
 
                     </div>
 
                 </div>
 
 
-                <!-- Info -->
 
-                <div class="info-box">
+                <!-- DETAIL -->
 
-                    <div class="info-icon">
-                        i
+                <div class="setting">
+
+                    <div class="setting-top">
+
+                        <label for="detail">
+                            Detail
+                        </label>
+
+                        <span id="detailValue">
+                            5
+                        </span>
+
                     </div>
 
-                    <div>
 
-                        <strong>
-                            Textile production tip
-                        </strong>
+                    <input
+                        id="detail"
+                        type="range"
+                        min="1"
+                        max="10"
+                        value="5"
+                    >
 
-                        <p>
-                            For textile printing, start with
-                            6–16 colors and medium detail.
-                            Simplify the artwork after conversion
-                            if the SVG contains too many paths.
-                        </p>
+
+                    <div class="range-labels">
+
+                        <span>
+                            Simple
+                        </span>
+
+                        <span>
+                            Detailed
+                        </span>
 
                     </div>
 
                 </div>
 
-            </section>
+
+
+                <!-- SIMPLIFICATION -->
+
+                <div class="setting">
+
+                    <div class="setting-top">
+
+                        <label for="simplify">
+                            Simplification
+                        </label>
+
+                        <span id="simplifyValue">
+                            1
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="simplify"
+                        type="range"
+                        min="0"
+                        max="10"
+                        value="1"
+                    >
+
+
+                    <div class="range-labels">
+
+                        <span>
+                            Precise
+                        </span>
+
+                        <span>
+                            Smooth
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- VECTOR MODE -->
+
+                <div class="setting">
+
+                    <label class="setting-title">
+                        Vector Mode
+                    </label>
+
+
+                    <div class="mode-buttons">
+
+                        <button
+                            type="button"
+                            class="mode-button active"
+                            data-mode="color"
+                        >
+                            Color
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="mode-button"
+                            data-mode="bw"
+                        >
+                            Black & White
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 CONVERT BUTTON
+            ================================================== -->
+
+            <button
+                id="vectorizeBtn"
+                class="convert-button"
+                type="button"
+                disabled
+            >
+
+                <span>
+                    Convert to Vector
+                </span>
+
+                <span>
+                    →
+                </span>
+
+            </button>
+
+
+
+            <!-- ==================================================
+                 DOWNLOAD
+            ================================================== -->
+
+            <button
+                id="downloadBtn"
+                class="download-button"
+                type="button"
+                disabled
+            >
+
+                Download SVG
+
+            </button>
+
+
+        </aside>
+
+
+
+        <!-- ==================================================
+             PREVIEW AREA
+        ================================================== -->
+
+        <section class="preview-area">
+
+
+            <!-- PREVIEW HEADER -->
+
+            <div class="preview-header">
+
+                <div>
+
+                    <h3>
+                        Artwork Preview
+                    </h3>
+
+                    <span id="fileInfo">
+                        No image uploaded
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="processingStatus"
+                    class="processing-status"
+                >
+                    Ready
+                </div>
+
+            </div>
+
+
+
+            <!-- PREVIEW GRID -->
+
+            <div class="preview-grid">
+
+
+                <!-- ORIGINAL -->
+
+                <div class="preview-card">
+
+                    <div class="card-header">
+
+                        <span>
+                            ORIGINAL
+                        </span>
+
+                        <span id="originalSize">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        id="originalPreview"
+                        class="preview-box empty"
+                    >
+
+                        <div class="empty-content">
+
+                            <div class="empty-icon">
+                                +
+                            </div>
+
+                            <p>
+                                Upload an image
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- VECTOR -->
+
+                <div class="preview-card">
+
+                    <div class="card-header">
+
+                        <span>
+                            VECTOR SVG
+                        </span>
+
+                        <span id="vectorSize">
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        id="vectorPreview"
+                        class="preview-box empty"
+                    >
+
+                        <div class="empty-content">
+
+                            <div class="empty-icon">
+                                ◇
+                            </div>
+
+                            <p>
+                                Vector preview will appear here
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 PROGRESS
+            ================================================== -->
+
+            <div
+                id="progressContainer"
+                class="progress-container hidden"
+            >
+
+                <div class="progress-top">
+
+                    <span>
+                        Creating vector paths...
+                    </span>
+
+                    <span id="progressText">
+                        0%
+                    </span>
+
+                </div>
+
+
+                <div class="progress-bar">
+
+                    <div
+                        id="progressBar"
+                        class="progress-fill"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 INFORMATION
+            ================================================== -->
+
+            <div class="info-box">
+
+                <div class="info-icon">
+                    i
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Textile production tip
+                    </strong>
+
+
+                    <p>
+
+                        For textile artwork, 6–16 colors
+                        usually gives a good starting point.
+                        Use higher detail for line artwork
+                        and higher simplification for
+                        smoother production files.
+
+                    </p>
+
+                </div>
+
+            </div>
+
 
         </section>
 
-    </main>
+    </section>
+
+</main>
 
 
-    <!-- ================= FOOTER ================= -->
 
-    <footer>
+<!-- ==================================================
+     FOOTER
+================================================== -->
 
-        <span>
-            Textile Vector Studio
-        </span>
+<footer>
 
-        <span>
-            Client-side processing · Your image stays in your browser
-        </span>
+    <span>
+        Textile Vector Studio
+    </span>
 
-    </footer>
+    <span>
+        Client-side processing
+    </span>
+
+</footer>
 
 
-    <!-- ImageTracer -->
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"
-    ></script>
+<!-- ==================================================
+     VECTOR ENGINE
+================================================== -->
 
-    <!-- App -->
+<script
+    src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"
+></script>
 
-    <script src="app.js"></script>
+
+<!-- YOUR JAVASCRIPT -->
+
+<script
+    src="script.js"
+></script>
+
 
 </body>
+
 </html>
