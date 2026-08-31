@@ -1,606 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-  <title>Textile Vector Studio</title>
-  <meta
-    name="description"
-    content="Professional photo to vector textile design studio"
-  >
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>Textile Vector Studio</title>
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+    <meta
+        name="description"
+        content="Professional photo to vector conversion tool for textile designers."
+    >
 
-  <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
 
 <body>
 
-  <!-- =========================
-       TOP NAVIGATION
-  ========================== -->
+    <!-- ================= HEADER ================= -->
 
-  <header class="topbar">
+    <header class="topbar">
 
-    <div class="brand">
-      <div class="brand-icon">TV</div>
+        <div class="brand">
+            <div class="brand-mark">TV</div>
 
-      <div>
-        <h1>Textile Vector Studio</h1>
-        <span>Professional Textile Design Tool</span>
-      </div>
-    </div>
-
-    <div class="top-actions">
-
-      <button id="resetBtn" class="top-btn">
-        ↻ Reset
-      </button>
-
-      <button id="saveProjectBtn" class="top-btn">
-        Save Project
-      </button>
-
-      <label class="top-btn primary-btn">
-        Upload Photo
-        <input
-          type="file"
-          id="photoInput"
-          accept="image/png,image/jpeg,image/webp"
-          hidden
-        >
-      </label>
-
-    </div>
-
-  </header>
-
-
-  <!-- =========================
-       MAIN APPLICATION
-  ========================== -->
-
-  <main class="app">
-
-    <!-- LEFT SIDEBAR -->
-
-    <aside class="sidebar">
-
-      <section class="panel-section">
-
-        <div class="section-title">
-          <span>01</span>
-          Image
+            <div>
+                <h1>Textile Vector Studio</h1>
+                <span>Photo → Clean SVG Vector</span>
+            </div>
         </div>
 
-        <label class="upload-box" for="photoInput">
-
-          <div class="upload-icon">↑</div>
-
-          <strong>Choose Photo</strong>
-
-          <small>
-            JPG, PNG or WebP
-          </small>
-
-        </label>
-
-        <div id="fileName" class="file-name">
-          No image selected
+        <div class="header-status">
+            <span class="status-dot"></span>
+            Browser Processing
         </div>
 
-      </section>
+    </header>
 
 
-      <!-- EDITING -->
+    <!-- ================= MAIN ================= -->
 
-      <section class="panel-section">
+    <main class="app-container">
 
-        <div class="section-title">
-          <span>02</span>
-          Image Editing
-        </div>
+        <!-- HERO -->
 
-        <div class="button-grid">
+        <section class="hero">
 
-          <button id="removeBgBtn" class="tool-btn">
-            Remove Background
-          </button>
+            <div>
+                <p class="eyebrow">TEXTILE DESIGN TOOL</p>
 
-          <button id="cropBtn" class="tool-btn">
-            Crop
-          </button>
+                <h2>
+                    Turn your textile artwork
+                    into editable vector SVG
+                </h2>
 
-          <button id="rotateLeftBtn" class="tool-btn">
-            ↺ Rotate
-          </button>
+                <p class="hero-description">
+                    Upload your artwork, adjust vector settings,
+                    preview the result and download a clean SVG
+                    file for Illustrator, CorelDRAW and other
+                    vector software.
+                </p>
+            </div>
 
-          <button id="rotateRightBtn" class="tool-btn">
-            ↻ Rotate
-          </button>
+        </section>
 
-        </div>
 
-      </section>
+        <!-- ================= WORKSPACE ================= -->
 
+        <section class="workspace">
 
-      <!-- ADJUSTMENTS -->
+            <!-- LEFT CONTROL PANEL -->
 
-      <section class="panel-section">
+            <aside class="control-panel">
 
-        <div class="section-title">
-          <span>03</span>
-          Adjustments
-        </div>
+                <div class="panel-title">
+                    <h3>Vector Settings</h3>
 
-        <div class="control">
+                    <button
+                        id="resetBtn"
+                        class="text-button"
+                    >
+                        Reset
+                    </button>
+                </div>
 
-          <div class="control-head">
-            <label>Brightness</label>
-            <output id="brightnessValue">0</output>
-          </div>
 
-          <input
-            type="range"
-            id="brightness"
-            min="-100"
-            max="100"
-            value="0"
-          >
+                <!-- Upload -->
 
-        </div>
+                <div
+                    id="dropZone"
+                    class="upload-zone"
+                >
 
+                    <input
+                        type="file"
+                        id="fileInput"
+                        accept="image/png,image/jpeg,image/webp"
+                        hidden
+                    >
 
-        <div class="control">
+                    <div class="upload-icon">
+                        ↑
+                    </div>
 
-          <div class="control-head">
-            <label>Contrast</label>
-            <output id="contrastValue">0</output>
-          </div>
+                    <h4>Upload Artwork</h4>
 
-          <input
-            type="range"
-            id="contrast"
-            min="-100"
-            max="100"
-            value="0"
-          >
+                    <p>
+                        Drag & drop your image here
+                    </p>
 
-        </div>
+                    <button
+                        id="browseBtn"
+                        class="primary-button"
+                    >
+                        Browse Image
+                    </button>
 
+                    <small>
+                        JPG, PNG or WEBP · Max 20 MB
+                    </small>
 
-        <div class="control">
+                </div>
 
-          <div class="control-head">
-            <label>Detail</label>
-            <output id="detailValue">50</output>
-          </div>
 
-          <input
-            type="range"
-            id="detail"
-            min="1"
-            max="100"
-            value="50"
-          >
+                <!-- Settings -->
 
-        </div>
+                <div class="settings">
 
+                    <!-- Color Count -->
 
-        <div class="control">
+                    <div class="setting">
 
-          <div class="control-head">
-            <label>Smoothness</label>
-            <output id="smoothnessValue">20</output>
-          </div>
+                        <div class="setting-label">
 
-          <input
-            type="range"
-            id="smoothness"
-            min="0"
-            max="100"
-            value="20"
-          >
+                            <label for="colorCount">
+                                Colors
+                            </label>
 
-        </div>
+                            <span id="colorValue">
+                                16
+                            </span>
 
-      </section>
+                        </div>
 
+                        <input
+                            type="range"
+                            id="colorCount"
+                            min="2"
+                            max="32"
+                            value="16"
+                        >
 
-      <!-- VECTOR SETTINGS -->
+                        <div class="range-info">
+                            <span>2</span>
+                            <span>32</span>
+                        </div>
 
-      <section class="panel-section">
+                    </div>
 
-        <div class="section-title">
-          <span>04</span>
-          Vector Settings
-        </div>
 
+                    <!-- Detail -->
 
-        <div class="control">
+                    <div class="setting">
 
-          <div class="control-head">
-            <label>Color Count</label>
-            <output id="colorCountValue">8</output>
-          </div>
+                        <div class="setting-label">
 
-          <input
-            type="range"
-            id="colorCount"
-            min="2"
-            max="16"
-            value="8"
-          >
+                            <label for="detail">
+                                Detail
+                            </label>
 
-        </div>
+                            <span id="detailValue">
+                                5
+                            </span>
 
+                        </div>
 
-        <label class="select-label">
-          Color Mode
+                        <input
+                            type="range"
+                            id="detail"
+                            min="1"
+                            max="10"
+                            value="5"
+                        >
 
-          <select id="colorMode">
+                        <div class="range-info">
+                            <span>Simple</span>
+                            <span>Detailed</span>
+                        </div>
 
-            <option value="rgb">
-              RGB
-            </option>
+                    </div>
 
-            <option value="cmyk">
-              CMYK
-            </option>
 
-            <option value="bw">
-              Black / White
-            </option>
+                    <!-- Simplify -->
 
-          </select>
+                    <div class="setting">
 
-        </label>
+                        <div class="setting-label">
 
+                            <label for="simplify">
+                                Simplification
+                            </label>
 
-        <button id="vectorizeBtn" class="vector-btn">
-          Create Clean Vector
-        </button>
+                            <span id="simplifyValue">
+                                1
+                            </span>
 
-      </section>
+                        </div>
 
+                        <input
+                            type="range"
+                            id="simplify"
+                            min="0"
+                            max="10"
+                            value="1"
+                        >
 
-      <!-- TEXTILE REPEAT -->
+                        <div class="range-info">
+                            <span>Precise</span>
+                            <span>Smooth</span>
+                        </div>
 
-      <section class="panel-section">
+                    </div>
 
-        <div class="section-title">
-          <span>05</span>
-          Textile Repeat
-        </div>
 
+                    <!-- Vector Mode -->
 
-        <label class="select-label">
-          Repeat Type
+                    <div class="setting">
 
-          <select id="repeatType">
+                        <label class="setting-heading">
+                            Vector Mode
+                        </label>
 
-            <option value="straight">
-              Straight
-            </option>
+                        <div class="mode-buttons">
 
-            <option value="halfDrop">
-              Half Drop
-            </option>
+                            <button
+                                class="mode-button active"
+                                data-mode="color"
+                            >
+                                Color
+                            </button>
 
-            <option value="brick">
-              Brick
-            </option>
+                            <button
+                                class="mode-button"
+                                data-mode="bw"
+                            >
+                                Black & White
+                            </button>
 
-            <option value="mirror">
-              Mirror
-            </option>
+                        </div>
 
-            <option value="rotate">
-              Rotate
-            </option>
+                    </div>
 
-          </select>
+                </div>
 
-        </label>
 
+                <!-- Generate -->
 
-        <div class="repeat-buttons">
+                <button
+                    id="vectorizeBtn"
+                    class="generate-button"
+                    disabled
+                >
+                    <span>Convert to Vector</span>
+                    <span>→</span>
+                </button>
 
-          <button data-repeat="2" class="repeat-btn active">
-            2×2
-          </button>
 
-          <button data-repeat="4" class="repeat-btn">
-            4×4
-          </button>
+                <!-- Download -->
 
-          <button data-repeat="8" class="repeat-btn">
-            8×8
-          </button>
+                <button
+                    id="downloadBtn"
+                    class="download-button"
+                    disabled
+                >
+                    Download SVG
+                </button>
 
-        </div>
+            </aside>
 
-      </section>
 
+            <!-- ================= PREVIEW ================= -->
 
-      <!-- EXPORT -->
+            <section class="preview-area">
 
-      <section class="panel-section">
+                <div class="preview-header">
 
-        <div class="section-title">
-          <span>06</span>
-          Export
-        </div>
+                    <div>
+                        <h3>Artwork Preview</h3>
 
+                        <span id="fileInfo">
+                            No image uploaded
+                        </span>
+                    </div>
 
-        <div class="export-grid">
+                    <div
+                        id="processingStatus"
+                        class="processing-status"
+                    >
+                        Ready
+                    </div>
 
-          <button id="downloadSvgBtn" class="export-btn">
-            SVG
-          </button>
+                </div>
 
-          <button id="downloadPngBtn" class="export-btn">
-            PNG
-          </button>
 
-          <button id="downloadDxfBtn" class="export-btn">
-            DXF
-          </button>
+                <div class="preview-grid">
 
-          <button id="printPdfBtn" class="export-btn">
-            PDF
-          </button>
+                    <!-- ORIGINAL -->
 
-        </div>
+                    <div class="preview-card">
 
+                        <div class="card-header">
 
-        <button id="highResBtn" class="highres-btn">
-          Download High Resolution PNG
-        </button>
+                            <span>ORIGINAL</span>
 
-      </section>
+                            <span id="originalSize">
+                                —
+                            </span>
 
-    </aside>
+                        </div>
 
+                        <div
+                            id="originalPreview"
+                            class="image-preview empty"
+                        >
 
-    <!-- CENTER WORKSPACE -->
+                            <div class="empty-state">
 
-    <section class="workspace">
+                                <div class="empty-icon">
+                                    +
+                                </div>
 
-      <div class="workspace-toolbar">
+                                <p>
+                                    Upload an image
+                                </p>
 
-        <div class="view-tabs">
+                            </div>
 
-          <button id="originalTab" class="view-tab active">
-            Original
-          </button>
+                        </div>
 
-          <button id="vectorTab" class="view-tab">
-            Vector
-          </button>
+                    </div>
 
-          <button id="patternTab" class="view-tab">
-            Pattern
-          </button>
 
-        </div>
+                    <!-- VECTOR -->
 
+                    <div class="preview-card">
 
-        <div class="view-tools">
+                        <div class="card-header">
 
-          <button id="zoomOutBtn">
-            −
-          </button>
+                            <span>VECTOR SVG</span>
 
-          <span id="zoomValue">
-            100%
-          </span>
+                            <span id="vectorSize">
+                                —
+                            </span>
 
-          <button id="zoomInBtn">
-            +
-          </button>
+                        </div>
 
-          <button id="fitBtn">
-            Fit
-          </button>
+                        <div
+                            id="vectorPreview"
+                            class="image-preview empty"
+                        >
 
-          <button id="gridBtn">
-            Grid
-          </button>
+                            <div class="empty-state">
 
-          <button id="panBtn">
-            Pan
-          </button>
+                                <div class="empty-icon">
+                                    ◇
+                                </div>
 
-        </div>
+                                <p>
+                                    Vector preview will appear here
+                                </p>
 
-      </div>
+                            </div>
 
+                        </div>
 
-      <!-- CANVAS AREA -->
+                    </div>
 
-      <div id="canvasArea" class="canvas-area">
+                </div>
 
-        <div id="emptyState" class="empty-state">
 
-          <div class="empty-logo">
-            TV
-          </div>
+                <!-- Progress -->
 
-          <h2>Start Your Textile Design</h2>
+                <div
+                    id="progressContainer"
+                    class="progress-container hidden"
+                >
 
-          <p>
-            Upload a photo to create a clean,
-            editable vector textile pattern.
-          </p>
+                    <div class="progress-top">
 
-          <label for="photoInput" class="empty-upload">
-            Choose Photo
-          </label>
+                        <span>
+                            Creating vector paths...
+                        </span>
 
-        </div>
+                        <span id="progressText">
+                            0%
+                        </span>
 
+                    </div>
 
-        <div id="canvasWrapper" class="canvas-wrapper hidden">
+                    <div class="progress-bar">
 
-          <canvas id="mainCanvas"></canvas>
+                        <div
+                            id="progressBar"
+                            class="progress-fill"
+                        ></div>
 
-          <div id="gridOverlay"></div>
+                    </div>
 
-        </div>
+                </div>
 
-      </div>
 
+                <!-- Info -->
 
-      <!-- STATUS BAR -->
+                <div class="info-box">
 
-      <div class="statusbar">
+                    <div class="info-icon">
+                        i
+                    </div>
 
-        <div>
-          <span class="status-dot"></span>
-          <span id="statusText">
-            Ready
-          </span>
-        </div>
+                    <div>
 
-        <div id="imageInfo">
-          No image
-        </div>
+                        <strong>
+                            Textile production tip
+                        </strong>
 
-      </div>
+                        <p>
+                            For textile printing, start with
+                            6–16 colors and medium detail.
+                            Simplify the artwork after conversion
+                            if the SVG contains too many paths.
+                        </p>
 
-    </section>
+                    </div>
 
+                </div>
 
-    <!-- RIGHT INFORMATION PANEL -->
+            </section>
 
-    <aside class="right-panel">
+        </section>
 
-      <div class="right-header">
+    </main>
 
-        <span>DESIGN PREVIEW</span>
 
-        <span id="vectorStatus" class="status-pill">
-          Not Vectorized
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <span>
+            Textile Vector Studio
         </span>
 
-      </div>
+        <span>
+            Client-side processing · Your image stays in your browser
+        </span>
+
+    </footer>
 
 
-      <div class="preview-card">
+    <!-- ImageTracer -->
 
-        <div class="preview-title">
-          Seamless Pattern Preview
-        </div>
+    <script
+        src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"
+    ></script>
 
-        <div id="patternPreview" class="pattern-preview">
+    <!-- App -->
 
-          <div class="preview-placeholder">
-            Your textile repeat will appear here
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="spec-card">
-
-        <div class="spec-title">
-          Design Information
-        </div>
-
-        <div class="spec-row">
-          <span>Mode</span>
-          <strong id="infoMode">RGB</strong>
-        </div>
-
-        <div class="spec-row">
-          <span>Colors</span>
-          <strong id="infoColors">8</strong>
-        </div>
-
-        <div class="spec-row">
-          <span>Repeat</span>
-          <strong id="infoRepeat">2×2</strong>
-        </div>
-
-        <div class="spec-row">
-          <span>Format</span>
-          <strong id="infoFormat">SVG Ready</strong>
-        </div>
-
-      </div>
-
-
-      <div class="tips-card">
-
-        <div class="spec-title">
-          Professional Workflow
-        </div>
-
-        <ol>
-
-          <li>
-            Upload a high-quality photo.
-          </li>
-
-          <li>
-            Adjust brightness and contrast.
-          </li>
-
-          <li>
-            Remove unwanted background.
-          </li>
-
-          <li>
-            Choose color count and detail.
-          </li>
-
-          <li>
-            Create clean vector.
-          </li>
-
-          <li>
-            Test textile repeat.
-          </li>
-
-          <li>
-            Export SVG for production.
-          </li>
-
-        </ol>
-
-      </div>
-
-    </aside>
-
-  </main>
-
-
-  <!-- FOOTER -->
-
-  <footer class="footer">
-
-    <span>
-      Textile Vector Studio
-    </span>
-
-    <span>
-      Photo → Vector → Textile Repeat
-    </span>
-
-  </footer>
-
-
-  <script src="script.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
