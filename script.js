@@ -1,12 +1,12 @@
-/* =====================================================
+/* ==================================================
    TEXTILE VECTOR STUDIO
    PHOTO → SVG VECTOR
-===================================================== */
+================================================== */
 
 
-/* =====================================================
+/* ==================================================
    ELEMENTS
-===================================================== */
+================================================== */
 
 const fileInput =
     document.getElementById("fileInput");
@@ -72,9 +72,9 @@ const simplifyValue =
     document.getElementById("simplifyValue");
 
 
-/* =====================================================
-   STATE
-===================================================== */
+/* ==================================================
+   APPLICATION STATE
+================================================== */
 
 let currentFile = null;
 
@@ -84,14 +84,45 @@ let currentSVG = null;
 
 let vectorMode = "color";
 
+let progressTimer = null;
 
-/* =====================================================
+
+
+/* ==================================================
+   CHECK VECTOR ENGINE
+================================================== */
+
+window.addEventListener(
+    "load",
+    function () {
+
+        if (
+            typeof ImageTracer === "undefined"
+        ) {
+
+            showStatus(
+                "Vector engine unavailable",
+                true
+            );
+
+            console.error(
+                "ImageTracerJS failed to load."
+            );
+
+        }
+
+    }
+);
+
+
+
+/* ==================================================
    RANGE CONTROLS
-===================================================== */
+================================================== */
 
 colorCount.addEventListener(
     "input",
-    () => {
+    function () {
 
         colorValue.textContent =
             colorCount.value;
@@ -102,7 +133,7 @@ colorCount.addEventListener(
 
 detail.addEventListener(
     "input",
-    () => {
+    function () {
 
         detailValue.textContent =
             detail.value;
@@ -113,7 +144,7 @@ detail.addEventListener(
 
 simplify.addEventListener(
     "input",
-    () => {
+    function () {
 
         simplifyValue.textContent =
             simplify.value;
@@ -122,13 +153,14 @@ simplify.addEventListener(
 );
 
 
-/* =====================================================
-   BROWSE
-===================================================== */
+
+/* ==================================================
+   BROWSE BUTTON
+================================================== */
 
 browseBtn.addEventListener(
     "click",
-    (event) => {
+    function (event) {
 
         event.stopPropagation();
 
@@ -140,7 +172,15 @@ browseBtn.addEventListener(
 
 dropZone.addEventListener(
     "click",
-    () => {
+    function (event) {
+
+        if (
+            event.target === browseBtn
+        ) {
+
+            return;
+
+        }
 
         fileInput.click();
 
@@ -150,7 +190,7 @@ dropZone.addEventListener(
 
 fileInput.addEventListener(
     "change",
-    (event) => {
+    function (event) {
 
         const file =
             event.target.files[0];
@@ -165,50 +205,47 @@ fileInput.addEventListener(
 );
 
 
-/* =====================================================
+
+/* ==================================================
    DRAG & DROP
-===================================================== */
+================================================== */
 
-[
+dropZone.addEventListener(
     "dragenter",
-    "dragover"
-].forEach(
-    eventName => {
+    function (event) {
 
-        dropZone.addEventListener(
-            eventName,
-            event => {
+        event.preventDefault();
 
-                event.preventDefault();
-
-                dropZone.classList.add(
-                    "dragover"
-                );
-
-            }
+        dropZone.classList.add(
+            "dragover"
         );
 
     }
 );
 
 
-[
+dropZone.addEventListener(
+    "dragover",
+    function (event) {
+
+        event.preventDefault();
+
+        dropZone.classList.add(
+            "dragover"
+        );
+
+    }
+);
+
+
+dropZone.addEventListener(
     "dragleave",
-    "drop"
-].forEach(
-    eventName => {
+    function (event) {
 
-        dropZone.addEventListener(
-            eventName,
-            event => {
+        event.preventDefault();
 
-                event.preventDefault();
-
-                dropZone.classList.remove(
-                    "dragover"
-                );
-
-            }
+        dropZone.classList.remove(
+            "dragover"
         );
 
     }
@@ -217,21 +254,32 @@ fileInput.addEventListener(
 
 dropZone.addEventListener(
     "drop",
-    event => {
+    function (event) {
+
+        event.preventDefault();
+
+        dropZone.classList.remove(
+            "dragover"
+        );
+
 
         const file =
             event.dataTransfer.files[0];
 
-        if (!file) return;
+
+        if (!file) {
+
+            return;
+
+        }
+
 
         if (
-            !file.type.startsWith(
-                "image/"
-            )
+            !file.type.startsWith("image/")
         ) {
 
             showStatus(
-                "Invalid file",
+                "Invalid image file",
                 true
             );
 
@@ -239,25 +287,33 @@ dropZone.addEventListener(
 
         }
 
+
         loadImage(file);
 
     }
 );
 
 
-/* =====================================================
+
+/* ==================================================
    LOAD IMAGE
-===================================================== */
+================================================== */
 
 function loadImage(file) {
+
+
+    /* Maximum file size */
 
     const maxSize =
         20 * 1024 * 1024;
 
-    if (file.size > maxSize) {
+
+    if (
+        file.size > maxSize
+    ) {
 
         alert(
-            "File is larger than 20 MB."
+            "This image is larger than 20 MB."
         );
 
         return;
@@ -265,110 +321,164 @@ function loadImage(file) {
     }
 
 
-    currentFile = file;
+    /* Supported formats */
 
-    currentSVG = null;
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+
+    if (
+        !allowedTypes.includes(
+            file.type
+        )
+    ) {
+
+        alert(
+            "Please upload JPG, PNG or WEBP."
+        );
+
+        return;
+
+    }
+
+
+    currentFile =
+        file;
+
+    currentSVG =
+        null;
 
 
     const reader =
         new FileReader();
 
 
-    reader.onload = function(event) {
+    reader.onload =
+        function (event) {
 
-        currentImageDataURL =
-            event.target.result;
-
-
-        const img =
-            new Image();
+            currentImageDataURL =
+                event.target.result;
 
 
-        img.onload = function() {
-
-            originalPreview.classList.remove(
-                "empty"
-            );
+            const image =
+                new Image();
 
 
-            originalPreview.innerHTML = "";
+            image.onload =
+                function () {
+
+                    displayOriginalImage(
+                        image
+                    );
 
 
-            const previewImage =
-                document.createElement("img");
+                    fileInfo.textContent =
+                        `${file.name} · ${formatBytes(file.size)}`;
 
 
-            previewImage.src =
+                    originalSize.textContent =
+                        `${image.width} × ${image.height}`;
+
+
+                    resetVectorPreview();
+
+
+                    vectorizeBtn.disabled =
+                        false;
+
+
+                    downloadBtn.disabled =
+                        true;
+
+
+                    showStatus(
+                        "Image ready"
+                    );
+
+                };
+
+
+            image.onerror =
+                function () {
+
+                    showStatus(
+                        "Could not read image",
+                        true
+                    );
+
+                };
+
+
+            image.src =
                 currentImageDataURL;
 
-
-            originalPreview.appendChild(
-                previewImage
-            );
+        };
 
 
-            originalSize.textContent =
-                `${img.width} × ${img.height}`;
-
-
-            fileInfo.textContent =
-                `${file.name} · ${formatBytes(file.size)}`;
-
-
-            vectorPreview.innerHTML = `
-
-                <div class="empty-state">
-
-                    <div class="empty-icon">
-                        ◇
-                    </div>
-
-                    <p>
-                        Ready to convert
-                    </p>
-
-                </div>
-
-            `;
-
-
-            vectorPreview.classList.add(
-                "empty"
-            );
-
-
-            vectorSize.textContent = "—";
-
-
-            vectorizeBtn.disabled =
-                false;
-
-
-            downloadBtn.disabled =
-                true;
-
+    reader.onerror =
+        function () {
 
             showStatus(
-                "Image ready"
+                "File reading failed",
+                true
             );
 
         };
 
 
-        img.src =
-            currentImageDataURL;
-
-    };
-
-
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(
+        file
+    );
 
 }
 
 
-/* =====================================================
+
+/* ==================================================
+   DISPLAY ORIGINAL
+================================================== */
+
+function displayOriginalImage(
+    image
+) {
+
+    originalPreview.classList.remove(
+        "empty"
+    );
+
+
+    originalPreview.innerHTML =
+        "";
+
+
+    const img =
+        document.createElement(
+            "img"
+        );
+
+
+    img.src =
+        image.src;
+
+
+    img.alt =
+        "Uploaded artwork";
+
+
+    originalPreview.appendChild(
+        img
+    );
+
+}
+
+
+
+/* ==================================================
    VECTOR MODE
-===================================================== */
+================================================== */
 
 const modeButtons =
     document.querySelectorAll(
@@ -377,17 +487,20 @@ const modeButtons =
 
 
 modeButtons.forEach(
-    button => {
+    function (button) {
 
         button.addEventListener(
             "click",
-            () => {
+            function () {
 
                 modeButtons.forEach(
-                    item =>
+                    function (item) {
+
                         item.classList.remove(
                             "active"
-                        )
+                        );
+
+                    }
                 );
 
 
@@ -399,6 +512,24 @@ modeButtons.forEach(
                 vectorMode =
                     button.dataset.mode;
 
+
+                /*
+                 * If an SVG already exists,
+                 * require conversion again.
+                 */
+
+                if (currentImageDataURL) {
+
+                    downloadBtn.disabled =
+                        true;
+
+                    currentSVG =
+                        null;
+
+                    resetVectorPreview();
+
+                }
+
             }
         );
 
@@ -406,9 +537,10 @@ modeButtons.forEach(
 );
 
 
-/* =====================================================
-   VECTORIZE
-===================================================== */
+
+/* ==================================================
+   CONVERT TO VECTOR
+================================================== */
 
 vectorizeBtn.addEventListener(
     "click",
@@ -418,7 +550,14 @@ vectorizeBtn.addEventListener(
 
 function convertToVector() {
 
-    if (!currentImageDataURL) {
+
+    if (
+        !currentImageDataURL
+    ) {
+
+        alert(
+            "Please upload an image first."
+        );
 
         return;
 
@@ -426,12 +565,11 @@ function convertToVector() {
 
 
     if (
-        typeof ImageTracer ===
-        "undefined"
+        typeof ImageTracer === "undefined"
     ) {
 
         alert(
-            "Vector engine could not be loaded. Please check your internet connection."
+            "Vector engine is not loaded. Please refresh the page and try again."
         );
 
         return;
@@ -447,14 +585,7 @@ function convertToVector() {
         true;
 
 
-    progressContainer.classList.remove(
-        "hidden"
-    );
-
-
-    setProgress(
-        10
-    );
+    showProgress();
 
 
     showStatus(
@@ -462,52 +593,55 @@ function convertToVector() {
     );
 
 
-    /*
-     * ImageTracer settings
-     *
-     * Color quantity controls
-     * number of colors.
-     */
-
-    let colors =
+    const colors =
         Number(
             colorCount.value
         );
 
 
-    let detailLevel =
+    const detailLevel =
         Number(
             detail.value
         );
 
 
-    let simplifyLevel =
+    const simplifyLevel =
         Number(
             simplify.value
         );
 
 
-    let ltoptions = {
+    /*
+     * ImageTracer configuration
+     */
 
-        corsenabled: false,
+    const options = {
 
-        colorsampling: 2,
+        corsenabled:
+            false,
+
+        colorsampling:
+            2,
 
         numberofcolors:
             colors,
 
-        mincolorratio: 0,
+        mincolorratio:
+            0,
 
-        colorquantcycles: 3,
+        colorquantcycles:
+            3,
 
-        strokewidth: 0,
+        strokewidth:
+            0,
 
-        linefilter: false,
+        linefilter:
+            false,
 
         pathomit:
             Math.max(
                 0,
-                8 -
+                12 -
                 detailLevel
             ),
 
@@ -527,10 +661,18 @@ function convertToVector() {
             20,
 
         ltres:
-            1,
+            Math.max(
+                0.5,
+                2 -
+                detailLevel * 0.12
+            ),
 
         qtres:
-            1,
+            Math.max(
+                0.5,
+                2 -
+                detailLevel * 0.12
+            ),
 
         rightangleenhance:
             true,
@@ -542,84 +684,64 @@ function convertToVector() {
 
 
     /*
-     * Black & White mode
+     * Black & White
      */
 
     if (
         vectorMode === "bw"
     ) {
 
-        ltoptions.numberofcolors =
+        options.numberofcolors =
             2;
 
-        ltoptions.colorsampling =
+        options.colorsampling =
             0;
 
     }
 
 
     /*
-     * Progress animation
+     * Start progress
      */
 
-    let progress = 15;
-
-
-    const progressTimer =
-        setInterval(
-            () => {
-
-                progress +=
-                    Math.random() * 8;
-
-                if (
-                    progress > 90
-                ) {
-
-                    progress = 90;
-
-                }
-
-                setProgress(
-                    Math.round(
-                        progress
-                    )
-                );
-
-            },
-            180
-        );
+    startProgressAnimation();
 
 
     /*
-     * Convert
+     * Give browser time to update UI
      */
 
     setTimeout(
-        () => {
+        function () {
 
             try {
 
                 ImageTracer.imageToSVG(
                     currentImageDataURL,
-                    function(svgString) {
+                    function (svgString) {
 
-                        clearInterval(
-                            progressTimer
-                        );
+                        finishProgress();
+
+
+                        if (
+                            !svgString
+                        ) {
+
+                            throw new Error(
+                                "SVG generation failed."
+                            );
+
+                        }
 
 
                         currentSVG =
-                            svgString;
-
-
-                        setProgress(
-                            100
-                        );
+                            cleanSVG(
+                                svgString
+                            );
 
 
                         displaySVG(
-                            svgString
+                            currentSVG
                         );
 
 
@@ -635,34 +757,21 @@ function convertToVector() {
                             "Vector ready"
                         );
 
-
-                        setTimeout(
-                            () => {
-
-                                progressContainer.classList.add(
-                                    "hidden"
-                                );
-
-                            },
-                            500
-                        );
-
                     },
-                    ltoptions
+                    options
                 );
 
             }
 
-            catch(error) {
-
-                clearInterval(
-                    progressTimer
-                );
-
+            catch (error) {
 
                 console.error(
+                    "Vectorization error:",
                     error
                 );
+
+
+                finishProgress();
 
 
                 vectorizeBtn.disabled =
@@ -676,23 +785,49 @@ function convertToVector() {
 
 
                 alert(
-                    "Vector conversion failed. Try using a smaller image or lower detail."
+                    "Vector conversion failed. Try reducing the image size or lowering the Detail setting."
                 );
 
             }
 
         },
-        250
+        200
     );
 
 }
 
 
-/* =====================================================
-   DISPLAY SVG
-===================================================== */
 
-function displaySVG(svgString) {
+/* ==================================================
+   CLEAN SVG
+================================================== */
+
+function cleanSVG(
+    svgString
+) {
+
+    /*
+     * Remove unnecessary XML whitespace.
+     */
+
+    return svgString
+        .replace(
+            /<\?xml[\s\S]*?\?>/gi,
+            ""
+        )
+        .trim();
+
+}
+
+
+
+/* ==================================================
+   DISPLAY SVG
+================================================== */
+
+function displaySVG(
+    svgString
+) {
 
     vectorPreview.classList.remove(
         "empty"
@@ -711,6 +846,15 @@ function displaySVG(svgString) {
 
     if (svg) {
 
+        svg.removeAttribute(
+            "width"
+        );
+
+        svg.removeAttribute(
+            "height"
+        );
+
+
         svg.style.maxWidth =
             "94%";
 
@@ -723,14 +867,13 @@ function displaySVG(svgString) {
         svg.style.height =
             "auto";
 
+        svg.style.display =
+            "block";
+
     }
 
 
-    /*
-     * Calculate SVG size
-     */
-
-    const bytes =
+    const size =
         new Blob(
             [svgString],
             {
@@ -741,14 +884,15 @@ function displaySVG(svgString) {
 
 
     vectorSize.textContent =
-        formatBytes(bytes);
+        formatBytes(size);
 
 }
 
 
-/* =====================================================
+
+/* ==================================================
    DOWNLOAD SVG
-===================================================== */
+================================================== */
 
 downloadBtn.addEventListener(
     "click",
@@ -758,7 +902,14 @@ downloadBtn.addEventListener(
 
 function downloadSVG() {
 
-    if (!currentSVG) {
+
+    if (
+        !currentSVG
+    ) {
+
+        alert(
+            "Please convert the image first."
+        );
 
         return;
 
@@ -787,14 +938,22 @@ function downloadSVG() {
         );
 
 
-    const originalName =
+    let fileName =
+        "textile-vector";
+
+
+    if (
         currentFile
-            ? currentFile.name
+    ) {
+
+        fileName =
+            currentFile.name
                 .replace(
                     /\.[^/.]+$/,
                     ""
-                )
-            : "textile-vector";
+                );
+
+    }
 
 
     link.href =
@@ -802,7 +961,7 @@ function downloadSVG() {
 
 
     link.download =
-        `${originalName}-vector.svg`;
+        `${fileName}-vector.svg`;
 
 
     document.body.appendChild(
@@ -825,23 +984,27 @@ function downloadSVG() {
 }
 
 
-/* =====================================================
+
+/* ==================================================
    RESET
-===================================================== */
+================================================== */
 
 resetBtn.addEventListener(
     "click",
-    resetApp
+    resetApplication
 );
 
 
-function resetApp() {
+function resetApplication() {
+
 
     currentFile =
         null;
 
+
     currentImageDataURL =
         null;
+
 
     currentSVG =
         null;
@@ -858,7 +1021,7 @@ function resetApp() {
 
     originalPreview.innerHTML = `
 
-        <div class="empty-state">
+        <div class="empty-content">
 
             <div class="empty-icon">
                 +
@@ -873,26 +1036,7 @@ function resetApp() {
     `;
 
 
-    vectorPreview.classList.add(
-        "empty"
-    );
-
-
-    vectorPreview.innerHTML = `
-
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                ◇
-            </div>
-
-            <p>
-                Vector preview will appear here
-            </p>
-
-        </div>
-
-    `;
+    resetVectorPreview();
 
 
     fileInfo.textContent =
@@ -915,9 +1059,7 @@ function resetApp() {
         true;
 
 
-    progressContainer.classList.add(
-        "hidden"
-    );
+    finishProgress();
 
 
     showStatus(
@@ -927,9 +1069,45 @@ function resetApp() {
 }
 
 
-/* =====================================================
+
+/* ==================================================
+   RESET VECTOR PREVIEW
+================================================== */
+
+function resetVectorPreview() {
+
+    vectorPreview.classList.add(
+        "empty"
+    );
+
+
+    vectorPreview.innerHTML = `
+
+        <div class="empty-content">
+
+            <div class="empty-icon">
+                ◇
+            </div>
+
+            <p>
+                Vector preview will appear here
+            </p>
+
+        </div>
+
+    `;
+
+
+    vectorSize.textContent =
+        "—";
+
+}
+
+
+
+/* ==================================================
    STATUS
-===================================================== */
+================================================== */
 
 function showStatus(
     message,
@@ -963,9 +1141,117 @@ function showStatus(
 }
 
 
-/* =====================================================
-   PROGRESS
-===================================================== */
+
+/* ==================================================
+   PROGRESS START
+================================================== */
+
+function showProgress() {
+
+    progressContainer.classList.remove(
+        "hidden"
+    );
+
+
+    progressBar.style.width =
+        "5%";
+
+
+    progressText.textContent =
+        "5%";
+
+}
+
+
+
+/* ==================================================
+   PROGRESS ANIMATION
+================================================== */
+
+function startProgressAnimation() {
+
+
+    let progress =
+        5;
+
+
+    clearInterval(
+        progressTimer
+    );
+
+
+    progressTimer =
+        setInterval(
+            function () {
+
+                progress +=
+                    Math.random() * 7;
+
+
+                if (
+                    progress > 92
+                ) {
+
+                    progress =
+                        92;
+
+                }
+
+
+                setProgress(
+                    Math.round(
+                        progress
+                    )
+                );
+
+            },
+            180
+        );
+
+}
+
+
+
+/* ==================================================
+   FINISH PROGRESS
+================================================== */
+
+function finishProgress() {
+
+
+    clearInterval(
+        progressTimer
+    );
+
+
+    setProgress(
+        100
+    );
+
+
+    setTimeout(
+        function () {
+
+            progressContainer.classList.add(
+                "hidden"
+            );
+
+
+            setProgress(
+                0
+            );
+
+        },
+        500
+    );
+
+}
+
+
+
+/* ==================================================
+   SET PROGRESS
+================================================== */
 
 function setProgress(
     value
@@ -981,13 +1267,15 @@ function setProgress(
 }
 
 
-/* =====================================================
+
+/* ==================================================
    FILE SIZE
-===================================================== */
+================================================== */
 
 function formatBytes(
     bytes
 ) {
+
 
     if (
         bytes === 0
