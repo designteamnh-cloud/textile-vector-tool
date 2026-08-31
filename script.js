@@ -1,1408 +1,1031 @@
-/* =========================================================
+/* =====================================================
    TEXTILE VECTOR STUDIO
-   PHOTO -> CLEAN VECTOR -> TEXTILE REPEAT
-========================================================= */
+   PHOTO → SVG VECTOR
+===================================================== */
 
-const photoInput = document.getElementById("photoInput");
 
-const mainCanvas = document.getElementById("mainCanvas");
-const ctx = mainCanvas.getContext("2d", {
-  willReadFrequently: true
-});
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
-const canvasWrapper =
-  document.getElementById("canvasWrapper");
-function createVector() {
+const fileInput =
+    document.getElementById("fileInput");
 
-  if (!sourceCanvas) {
+const browseBtn =
+    document.getElementById("browseBtn");
 
-    alert("Please upload a photo first.");
-    return;
-  }
+const dropZone =
+    document.getElementById("dropZone");
 
-  setStatus("Creating clean vector paths...");
+const vectorizeBtn =
+    document.getElementById("vectorizeBtn");
 
-  const maxVectorSize = 260;
+const downloadBtn =
+    document.getElementById("downloadBtn");
 
-  let width = sourceCanvas.width;
-  let height = sourceCanvas.height;
+const resetBtn =
+    document.getElementById("resetBtn");
 
-  const scale = Math.min(
-    1,
-    maxVectorSize / Math.max(width, height)
-  );
+const originalPreview =
+    document.getElementById("originalPreview");
 
-  width = Math.max(1, Math.round(width * scale));
-  height = Math.max(1, Math.round(height * scale));
+const vectorPreview =
+    document.getElementById("vectorPreview");
 
-  const small = document.createElement("canvas");
+const fileInfo =
+    document.getElementById("fileInfo");
 
-  small.width = width;
-  small.height = height;
+const originalSize =
+    document.getElementById("originalSize");
 
-  const sc = small.getContext("2d", {
-    willReadFrequently: true
-  });
+const vectorSize =
+    document.getElementById("vectorSize");
 
-  sc.imageSmoothingEnabled = true;
+const processingStatus =
+    document.getElementById("processingStatus");
 
-  sc.drawImage(
-    sourceCanvas,
-    0,
-    0,
-    width,
-    height
-  );
+const progressContainer =
+    document.getElementById("progressContainer");
 
-  const imageData = sc.getImageData(
-    0,
-    0,
-    width,
-    height
-  );
+const progressBar =
+    document.getElementById("progressBar");
 
-  const pixels = imageData.data;
+const progressText =
+    document.getElementById("progressText");
 
-  const palette = getPalette(
-    pixels,
-    settings.colorCount
-  );
+const colorCount =
+    document.getElementById("colorCount");
 
-  /*
-    Create quantized raster preview.
-  */
+const colorValue =
+    document.getElementById("colorValue");
 
-  const output = document.createElement("canvas");
+const detail =
+    document.getElementById("detail");
 
-  output.width = width;
-  output.height = height;
+const detailValue =
+    document.getElementById("detailValue");
 
-  const oc = output.getContext("2d");
+const simplify =
+    document.getElementById("simplify");
 
-  const outputData = oc.createImageData(
-    width,
-    height
-  );
+const simplifyValue =
+    document.getElementById("simplifyValue");
 
-  const out = outputData.data;
 
-  for (
-    let y = 0;
-    y < height;
-    y++
-  ) {
+/* =====================================================
+   STATE
+===================================================== */
 
-    for (
-      let x = 0;
-      x < width;
-      x++
-    ) {
+let currentFile = null;
 
-      const index =
-        (y * width + x) * 4;
+let currentImageDataURL = null;
 
-      const alpha =
-        pixels[index + 3];
+let currentSVG = null;
 
-      if (alpha < 30) {
+let vectorMode = "color";
 
-        out[index + 3] = 0;
-        continue;
-      }
 
-      const nearest =
-        findNearestColor(
-          pixels[index],
-          pixels[index + 1],
-          pixels[index + 2],
-          palette
+/* =====================================================
+   RANGE CONTROLS
+===================================================== */
+
+colorCount.addEventListener(
+    "input",
+    () => {
+
+        colorValue.textContent =
+            colorCount.value;
+
+    }
+);
+
+
+detail.addEventListener(
+    "input",
+    () => {
+
+        detailValue.textContent =
+            detail.value;
+
+    }
+);
+
+
+simplify.addEventListener(
+    "input",
+    () => {
+
+        simplifyValue.textContent =
+            simplify.value;
+
+    }
+);
+
+
+/* =====================================================
+   BROWSE
+===================================================== */
+
+browseBtn.addEventListener(
+    "click",
+    (event) => {
+
+        event.stopPropagation();
+
+        fileInput.click();
+
+    }
+);
+
+
+dropZone.addEventListener(
+    "click",
+    () => {
+
+        fileInput.click();
+
+    }
+);
+
+
+fileInput.addEventListener(
+    "change",
+    (event) => {
+
+        const file =
+            event.target.files[0];
+
+        if (file) {
+
+            loadImage(file);
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   DRAG & DROP
+===================================================== */
+
+[
+    "dragenter",
+    "dragover"
+].forEach(
+    eventName => {
+
+        dropZone.addEventListener(
+            eventName,
+            event => {
+
+                event.preventDefault();
+
+                dropZone.classList.add(
+                    "dragover"
+                );
+
+            }
         );
 
-      out[index] = nearest[0];
-      out[index + 1] = nearest[1];
-      out[index + 2] = nearest[2];
-      out[index + 3] = 255;
     }
-  }
-
-  oc.putImageData(
-    outputData,
-    0,
-    0
-  );
-
-  /*
-    Keep raster preview.
-  */
-
-  vectorCanvas = output;
-
-  /*
-    IMPORTANT:
-    Convert color regions into
-    real SVG paths.
-  */
-
-  vectorPaths = traceColorPaths(
-    output,
-    palette
-  );
-
-  /*
-    Create real SVG path document.
-  */
-
-  vectorSvg = pathsToSvg(
-    vectorPaths,
-    width,
-    height
-  );
-
-  vectorized = true;
-
-  drawVectorToMainCanvas();
-
-  vectorStatus.textContent =
-    "Vector Ready";
-
-  vectorStatus.style.color =
-    "#55d69b";
-
-  setStatus(
-    `${vectorPaths.length} vector paths created`
-  );
-
-  updatePatternPreview();
-
-  updateInfoPanel();
-}/* =========================================================
-   TRUE COLOR REGION VECTOR TRACING
-   Pixel regions -> Boundary paths -> SVG paths
-========================================================= */
-
-function traceColorPaths(
-  canvas,
-  palette
-) {
-
-  const ctx =
-    canvas.getContext("2d", {
-      willReadFrequently: true
-    });
-
-  const width =
-    canvas.width;
-
-  const height =
-    canvas.height;
-
-  const data =
-    ctx.getImageData(
-      0,
-      0,
-      width,
-      height
-    ).data;
-
-  const paths = [];
+);
 
 
-  /*
-    Trace each palette color separately.
-  */
+[
+    "dragleave",
+    "drop"
+].forEach(
+    eventName => {
 
-  palette.forEach(color => {
+        dropZone.addEventListener(
+            eventName,
+            event => {
 
-    const mask =
-      createColorMask(
-        data,
-        width,
-        height,
-        color
-      );
+                event.preventDefault();
 
+                dropZone.classList.remove(
+                    "dragover"
+                );
 
-    /*
-      Remove very small areas.
-      This keeps textile vectors cleaner.
-    */
+            }
+        );
 
-    removeSmallComponents(
-      mask,
-      width,
-      height,
-      getMinimumRegionSize()
-    );
+    }
+);
 
 
-    /*
-      Convert region boundaries
-      into closed polygon paths.
-    */
+dropZone.addEventListener(
+    "drop",
+    event => {
 
-    const polygons =
-      maskToPolygons(
-        mask,
-        width,
-        height
-      );
+        const file =
+            event.dataTransfer.files[0];
 
-
-    polygons.forEach(
-      polygon => {
+        if (!file) return;
 
         if (
-          polygon.length < 3
-        ) {
-          return;
-        }
-
-
-        /*
-          Simplify the polygon.
-        */
-
-        const tolerance =
-          getVectorTolerance();
-
-
-        let simplified =
-          simplifyPolygon(
-            polygon,
-            tolerance
-          );
-
-
-        if (
-          simplified.length < 3
-        ) {
-          return;
-        }
-
-
-        /*
-          Remove tiny polygons.
-        */
-
-        const area =
-          Math.abs(
-            polygonArea(
-              simplified
+            !file.type.startsWith(
+                "image/"
             )
-          );
-
-
-        if (
-          area < getMinimumRegionSize()
-        ) {
-          return;
-        }
-
-
-        paths.push({
-
-          color: color,
-
-          points: simplified,
-
-          area: area
-        });
-
-      }
-    );
-
-  });
-
-
-  /*
-    Largest areas first.
-  */
-
-  paths.sort(
-    (a, b) =>
-      b.area - a.area
-  );
-
-
-  return paths;
-}
-
-
-/* =========================================================
-   COLOR MASK
-========================================================= */
-
-function createColorMask(
-  data,
-  width,
-  height,
-  color
-) {
-
-  const mask =
-    new Uint8Array(
-      width * height
-    );
-
-
-  for (
-    let y = 0;
-    y < height;
-    y++
-  ) {
-
-    for (
-      let x = 0;
-      x < width;
-      x++
-    ) {
-
-      const i =
-        (y * width + x) * 4;
-
-      const pixelR =
-        data[i];
-
-      const pixelG =
-        data[i + 1];
-
-      const pixelB =
-        data[i + 2];
-
-      const pixelA =
-        data[i + 3];
-
-
-      if (
-        pixelA > 20 &&
-        pixelR === color[0] &&
-        pixelG === color[1] &&
-        pixelB === color[2]
-      ) {
-
-        mask[
-          y * width + x
-        ] = 1;
-
-      }
-
-    }
-  }
-
-
-  return mask;
-}
-
-
-/* =========================================================
-   MINIMUM REGION SIZE
-========================================================= */
-
-function getMinimumRegionSize() {
-
-  const detailValue =
-    Number(settings.detail);
-
-  /*
-    Higher detail =
-    smaller regions allowed.
-  */
-
-  return Math.max(
-    2,
-    Math.round(
-      35 -
-      detailValue * 0.32
-    )
-  );
-}
-
-
-/* =========================================================
-   VECTOR TOLERANCE
-========================================================= */
-
-function getVectorTolerance() {
-
-  const smooth =
-    Number(settings.smoothness);
-
-  /*
-    Higher smoothness =
-    more aggressive simplification.
-  */
-
-  return Math.max(
-    0.35,
-    1 +
-    smooth * 0.055
-  );
-}
-
-
-/* =========================================================
-   REMOVE SMALL CONNECTED COMPONENTS
-========================================================= */
-
-function removeSmallComponents(
-  mask,
-  width,
-  height,
-  minimumSize
-) {
-
-  const visited =
-    new Uint8Array(
-      width * height
-    );
-
-
-  const neighbors = [
-
-    [-1, 0],
-    [1, 0],
-    [0, -1],
-    [0, 1]
-
-  ];
-
-
-  for (
-    let y = 0;
-    y < height;
-    y++
-  ) {
-
-    for (
-      let x = 0;
-      x < width;
-      x++
-    ) {
-
-      const start =
-        y * width + x;
-
-
-      if (
-        !mask[start] ||
-        visited[start]
-      ) {
-        continue;
-      }
-
-
-      const queue = [start];
-
-      const component = [];
-
-      visited[start] = 1;
-
-
-      while (
-        queue.length
-      ) {
-
-        const index =
-          queue.pop();
-
-        component.push(index);
-
-
-        const cx =
-          index % width;
-
-        const cy =
-          Math.floor(
-            index / width
-          );
-
-
-        neighbors.forEach(
-          ([dx, dy]) => {
-
-            const nx =
-              cx + dx;
-
-            const ny =
-              cy + dy;
-
-
-            if (
-              nx < 0 ||
-              nx >= width ||
-              ny < 0 ||
-              ny >= height
-            ) {
-              return;
-            }
-
-
-            const ni =
-              ny * width + nx;
-
-
-            if (
-              mask[ni] &&
-              !visited[ni]
-            ) {
-
-              visited[ni] = 1;
-
-              queue.push(ni);
-
-            }
-
-          }
-        );
-
-      }
-
-
-      if (
-        component.length <
-        minimumSize
-      ) {
-
-        component.forEach(
-          index => {
-            mask[index] = 0;
-          }
-        );
-
-      }
-
-    }
-  }
-}
-
-
-/* =========================================================
-   MASK -> POLYGONS
-========================================================= */
-
-function maskToPolygons(
-  mask,
-  width,
-  height
-) {
-
-  const edges = [];
-
-
-  /*
-    Every colored pixel contributes
-    only the edges touching empty space.
-  */
-
-  for (
-    let y = 0;
-    y < height;
-    y++
-  ) {
-
-    for (
-      let x = 0;
-      x < width;
-      x++
-    ) {
-
-      const index =
-        y * width + x;
-
-
-      if (!mask[index]) {
-        continue;
-      }
-
-
-      const top =
-        y === 0 ||
-        !mask[
-          (y - 1) * width + x
-        ];
-
-
-      const right =
-        x === width - 1 ||
-        !mask[
-          y * width + x + 1
-        ];
-
-
-      const bottom =
-        y === height - 1 ||
-        !mask[
-          (y + 1) * width + x
-        ];
-
-
-      const left =
-        x === 0 ||
-        !mask[
-          y * width + x - 1
-        ];
-
-
-      /*
-        Clockwise edge directions.
-      */
-
-      if (top) {
-
-        edges.push({
-
-          start: [x, y],
-
-          end: [x + 1, y]
-
-        });
-
-      }
-
-
-      if (right) {
-
-        edges.push({
-
-          start: [x + 1, y],
-
-          end: [x + 1, y + 1]
-
-        });
-
-      }
-
-
-      if (bottom) {
-
-        edges.push({
-
-          start: [x + 1, y + 1],
-
-          end: [x, y + 1]
-
-        });
-
-      }
-
-
-      if (left) {
-
-        edges.push({
-
-          start: [x, y + 1],
-
-          end: [x, y]
-
-        });
-
-      }
-
-    }
-  }
-
-
-  return connectEdges(
-    edges
-  );
-}
-
-
-/* =========================================================
-   CONNECT BOUNDARY EDGES
-========================================================= */
-
-function connectEdges(edges) {
-
-  const polygons = [];
-
-  const edgeMap = new Map();
-
-
-  edges.forEach(
-    (edge, index) => {
-
-      const key =
-        pointKey(
-          edge.start
-        );
-
-
-      if (!edgeMap.has(key)) {
-
-        edgeMap.set(
-          key,
-          []
-        );
-
-      }
-
-
-      edgeMap.get(key).push(
-        index
-      );
-
-    }
-  );
-
-
-  const used =
-    new Uint8Array(
-      edges.length
-    );
-
-
-  for (
-    let i = 0;
-    i < edges.length;
-    i++
-  ) {
-
-    if (used[i]) {
-      continue;
-    }
-
-
-    const polygon = [];
-
-    let currentIndex = i;
-
-    let safety = 0;
-
-
-    while (
-      safety++ <
-      edges.length + 10
-    ) {
-
-      if (
-        used[currentIndex]
-      ) {
-        break;
-      }
-
-
-      const edge =
-        edges[currentIndex];
-
-
-      used[currentIndex] = 1;
-
-
-      if (
-        polygon.length === 0
-      ) {
-
-        polygon.push(
-          edge.start
-        );
-
-      }
-
-
-      polygon.push(
-        edge.end
-      );
-
-
-      const nextKey =
-        pointKey(
-          edge.end
-        );
-
-
-      const candidates =
-        edgeMap.get(
-          nextKey
-        ) || [];
-
-
-      let nextIndex = -1;
-
-
-      for (
-        const candidate
-        of candidates
-      ) {
-
-        if (
-          !used[candidate]
         ) {
 
-          nextIndex =
-            candidate;
+            showStatus(
+                "Invalid file",
+                true
+            );
 
-          break;
+            return;
+
         }
 
-      }
-
-
-      if (
-        nextIndex === -1
-      ) {
-        break;
-      }
-
-
-      currentIndex =
-        nextIndex;
-
-
-      if (
-        pointsEqual(
-          edges[currentIndex].start,
-          polygon[0]
-        )
-      ) {
-        continue;
-      }
+        loadImage(file);
 
     }
+);
 
 
-    if (
-      polygon.length >= 4
-    ) {
+/* =====================================================
+   LOAD IMAGE
+===================================================== */
 
-      /*
-        Remove duplicated final point.
-      */
+function loadImage(file) {
 
-      if (
-        pointsEqual(
-          polygon[0],
-          polygon[
-            polygon.length - 1
-          ]
-        )
-      ) {
+    const maxSize =
+        20 * 1024 * 1024;
 
-        polygon.pop();
+    if (file.size > maxSize) {
 
-      }
-
-
-      polygons.push(
-        polygon
-      );
-
-    }
-
-  }
-
-
-  return polygons;
-}
-
-
-/* =========================================================
-   POINT UTILITIES
-========================================================= */
-
-function pointKey(point) {
-
-  return `${point[0]},${point[1]}`;
-}
-
-
-function pointsEqual(a, b) {
-
-  return (
-    a[0] === b[0] &&
-    a[1] === b[1]
-  );
-}
-
-
-/* =========================================================
-   RDP POLYGON SIMPLIFICATION
-========================================================= */
-
-function simplifyPolygon(
-  points,
-  tolerance
-) {
-
-  if (
-    points.length <= 3
-  ) {
-
-    return points.slice();
-  }
-
-
-  /*
-    First simplify open polyline.
-  */
-
-  const closed =
-    points.concat([
-      points[0]
-    ]);
-
-
-  const simplified =
-    simplifyRDP(
-      closed,
-      tolerance
-    );
-
-
-  /*
-    Remove duplicated closing point.
-  */
-
-  if (
-    simplified.length > 1 &&
-    pointsEqual(
-      simplified[0],
-      simplified[
-        simplified.length - 1
-      ]
-    )
-  ) {
-
-    simplified.pop();
-
-  }
-
-
-  return simplified;
-}
-
-
-function simplifyRDP(
-  points,
-  epsilon
-) {
-
-  if (
-    points.length < 3
-  ) {
-
-    return points.slice();
-  }
-
-
-  let maxDistance = 0;
-
-  let index = 0;
-
-
-  const first =
-    points[0];
-
-  const last =
-    points[
-      points.length - 1
-    ];
-
-
-  for (
-    let i = 1;
-    i < points.length - 1;
-    i++
-  ) {
-
-    const distance =
-      perpendicularDistance(
-        points[i],
-        first,
-        last
-      );
-
-
-    if (
-      distance >
-      maxDistance
-    ) {
-
-      index = i;
-
-      maxDistance =
-        distance;
-
-    }
-
-  }
-
-
-  if (
-    maxDistance > epsilon
-  ) {
-
-    const left =
-      simplifyRDP(
-        points.slice(
-          0,
-          index + 1
-        ),
-        epsilon
-      );
-
-
-    const right =
-      simplifyRDP(
-        points.slice(
-          index
-        ),
-        epsilon
-      );
-
-
-    return left
-      .slice(0, -1)
-      .concat(right);
-
-  }
-
-
-  return [
-    first,
-    last
-  ];
-}
-
-
-function perpendicularDistance(
-  point,
-  lineStart,
-  lineEnd
-) {
-
-  const x =
-    point[0];
-
-  const y =
-    point[1];
-
-
-  const x1 =
-    lineStart[0];
-
-  const y1 =
-    lineStart[1];
-
-
-  const x2 =
-    lineEnd[0];
-
-  const y2 =
-    lineEnd[1];
-
-
-  const dx =
-    x2 - x1;
-
-  const dy =
-    y2 - y1;
-
-
-  if (
-    dx === 0 &&
-    dy === 0
-  ) {
-
-    return Math.sqrt(
-      Math.pow(x - x1, 2) +
-      Math.pow(y - y1, 2)
-    );
-  }
-
-
-  const t =
-    (
-      (x - x1) * dx +
-      (y - y1) * dy
-    )
-    /
-    (dx * dx + dy * dy);
-
-
-  const clamped =
-    Math.max(
-      0,
-      Math.min(
-        1,
-        t
-      )
-    );
-
-
-  const px =
-    x1 + clamped * dx;
-
-  const py =
-    y1 + clamped * dy;
-
-
-  return Math.sqrt(
-    Math.pow(
-      x - px,
-      2
-    ) +
-    Math.pow(
-      y - py,
-      2
-    )
-  );
-}
-
-
-/* =========================================================
-   POLYGON AREA
-========================================================= */
-
-function polygonArea(
-  points
-) {
-
-  let area = 0;
-
-
-  for (
-    let i = 0;
-    i < points.length;
-    i++
-  ) {
-
-    const j =
-      (i + 1) %
-      points.length;
-
-
-    area +=
-      points[i][0] *
-      points[j][1]
-      -
-      points[j][0] *
-      points[i][1];
-
-  }
-
-
-  return area / 2;
-}/* =========================================================
-   VECTOR PATHS -> SVG
-========================================================= */
-
-function pathsToSvg(
-  paths,
-  width,
-  height
-) {
-
-  const svgParts = [];
-
-
-  svgParts.push(
-`<svg
-xmlns="http://www.w3.org/2000/svg"
-width="${width}"
-height="${height}"
-viewBox="0 0 ${width} ${height}">
-
-<g>`
-  );
-
-
-  paths.forEach(
-    (path, index) => {
-
-      const color =
-        path.color;
-
-
-      const d =
-        polygonToSvgPath(
-          path.points
+        alert(
+            "File is larger than 20 MB."
         );
 
-
-      if (!d) {
         return;
-      }
-
-
-      svgParts.push(
-`<path
-id="vector-${index + 1}"
-d="${d}"
-fill="rgb(${color[0]},${color[1]},${color[2]})"
-stroke="none"
-/>`
-      );
 
     }
-  );
 
 
-  svgParts.push(
-`</g>
-</svg>`
-  );
+    currentFile = file;
+
+    currentSVG = null;
 
 
-  return svgParts.join(
-    "\n"
-  );
+    const reader =
+        new FileReader();
+
+
+    reader.onload = function(event) {
+
+        currentImageDataURL =
+            event.target.result;
+
+
+        const img =
+            new Image();
+
+
+        img.onload = function() {
+
+            originalPreview.classList.remove(
+                "empty"
+            );
+
+
+            originalPreview.innerHTML = "";
+
+
+            const previewImage =
+                document.createElement("img");
+
+
+            previewImage.src =
+                currentImageDataURL;
+
+
+            originalPreview.appendChild(
+                previewImage
+            );
+
+
+            originalSize.textContent =
+                `${img.width} × ${img.height}`;
+
+
+            fileInfo.textContent =
+                `${file.name} · ${formatBytes(file.size)}`;
+
+
+            vectorPreview.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ◇
+                    </div>
+
+                    <p>
+                        Ready to convert
+                    </p>
+
+                </div>
+
+            `;
+
+
+            vectorPreview.classList.add(
+                "empty"
+            );
+
+
+            vectorSize.textContent = "—";
+
+
+            vectorizeBtn.disabled =
+                false;
+
+
+            downloadBtn.disabled =
+                true;
+
+
+            showStatus(
+                "Image ready"
+            );
+
+        };
+
+
+        img.src =
+            currentImageDataURL;
+
+    };
+
+
+    reader.readAsDataURL(file);
+
 }
 
 
-/* =========================================================
-   POLYGON -> SVG PATH
-========================================================= */
+/* =====================================================
+   VECTOR MODE
+===================================================== */
 
-function polygonToSvgPath(
-  points
-) {
-
-  if (
-    !points ||
-    points.length < 3
-  ) {
-
-    return "";
-  }
-
-
-  /*
-    Smooth mode:
-    use quadratic Bézier curves.
-
-    Lower smoothness keeps corners.
-    Higher smoothness creates smoother textile shapes.
-  */
-
-  if (
-    Number(settings.smoothness) >= 35
-  ) {
-
-    return polygonToSmoothPath(
-      points
+const modeButtons =
+    document.querySelectorAll(
+        ".mode-button"
     );
 
-  }
+
+modeButtons.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                modeButtons.forEach(
+                    item =>
+                        item.classList.remove(
+                            "active"
+                        )
+                );
 
 
-  /*
-    Clean straight path.
-  */
-
-  let d =
-    `M ${points[0][0]} ${points[0][1]}`;
+                button.classList.add(
+                    "active"
+                );
 
 
-  for (
-    let i = 1;
-    i < points.length;
-    i++
-  ) {
+                vectorMode =
+                    button.dataset.mode;
 
-    d +=
-      ` L ${points[i][0]} ${points[i][1]}`;
+            }
+        );
 
-  }
+    }
+);
 
 
-  d += " Z";
+/* =====================================================
+   VECTORIZE
+===================================================== */
+
+vectorizeBtn.addEventListener(
+    "click",
+    convertToVector
+);
 
 
-  return d;
+function convertToVector() {
+
+    if (!currentImageDataURL) {
+
+        return;
+
+    }
+
+
+    if (
+        typeof ImageTracer ===
+        "undefined"
+    ) {
+
+        alert(
+            "Vector engine could not be loaded. Please check your internet connection."
+        );
+
+        return;
+
+    }
+
+
+    vectorizeBtn.disabled =
+        true;
+
+
+    downloadBtn.disabled =
+        true;
+
+
+    progressContainer.classList.remove(
+        "hidden"
+    );
+
+
+    setProgress(
+        10
+    );
+
+
+    showStatus(
+        "Processing..."
+    );
+
+
+    /*
+     * ImageTracer settings
+     *
+     * Color quantity controls
+     * number of colors.
+     */
+
+    let colors =
+        Number(
+            colorCount.value
+        );
+
+
+    let detailLevel =
+        Number(
+            detail.value
+        );
+
+
+    let simplifyLevel =
+        Number(
+            simplify.value
+        );
+
+
+    let ltoptions = {
+
+        corsenabled: false,
+
+        colorsampling: 2,
+
+        numberofcolors:
+            colors,
+
+        mincolorratio: 0,
+
+        colorquantcycles: 3,
+
+        strokewidth: 0,
+
+        linefilter: false,
+
+        pathomit:
+            Math.max(
+                0,
+                8 -
+                detailLevel
+            ),
+
+        roundcoords:
+            Math.max(
+                1,
+                4 -
+                Math.floor(
+                    simplifyLevel / 3
+                )
+            ),
+
+        blurradius:
+            0,
+
+        blurdelta:
+            20,
+
+        ltres:
+            1,
+
+        qtres:
+            1,
+
+        rightangleenhance:
+            true,
+
+        layering:
+            0
+
+    };
+
+
+    /*
+     * Black & White mode
+     */
+
+    if (
+        vectorMode === "bw"
+    ) {
+
+        ltoptions.numberofcolors =
+            2;
+
+        ltoptions.colorsampling =
+            0;
+
+    }
+
+
+    /*
+     * Progress animation
+     */
+
+    let progress = 15;
+
+
+    const progressTimer =
+        setInterval(
+            () => {
+
+                progress +=
+                    Math.random() * 8;
+
+                if (
+                    progress > 90
+                ) {
+
+                    progress = 90;
+
+                }
+
+                setProgress(
+                    Math.round(
+                        progress
+                    )
+                );
+
+            },
+            180
+        );
+
+
+    /*
+     * Convert
+     */
+
+    setTimeout(
+        () => {
+
+            try {
+
+                ImageTracer.imageToSVG(
+                    currentImageDataURL,
+                    function(svgString) {
+
+                        clearInterval(
+                            progressTimer
+                        );
+
+
+                        currentSVG =
+                            svgString;
+
+
+                        setProgress(
+                            100
+                        );
+
+
+                        displaySVG(
+                            svgString
+                        );
+
+
+                        vectorizeBtn.disabled =
+                            false;
+
+
+                        downloadBtn.disabled =
+                            false;
+
+
+                        showStatus(
+                            "Vector ready"
+                        );
+
+
+                        setTimeout(
+                            () => {
+
+                                progressContainer.classList.add(
+                                    "hidden"
+                                );
+
+                            },
+                            500
+                        );
+
+                    },
+                    ltoptions
+                );
+
+            }
+
+            catch(error) {
+
+                clearInterval(
+                    progressTimer
+                );
+
+
+                console.error(
+                    error
+                );
+
+
+                vectorizeBtn.disabled =
+                    false;
+
+
+                showStatus(
+                    "Conversion failed",
+                    true
+                );
+
+
+                alert(
+                    "Vector conversion failed. Try using a smaller image or lower detail."
+                );
+
+            }
+
+        },
+        250
+    );
+
 }
 
 
-/* =========================================================
-   SMOOTH BEZIER PATH
-========================================================= */
+/* =====================================================
+   DISPLAY SVG
+===================================================== */
 
-function polygonToSmoothPath(
-  points
+function displaySVG(svgString) {
+
+    vectorPreview.classList.remove(
+        "empty"
+    );
+
+
+    vectorPreview.innerHTML =
+        svgString;
+
+
+    const svg =
+        vectorPreview.querySelector(
+            "svg"
+        );
+
+
+    if (svg) {
+
+        svg.style.maxWidth =
+            "94%";
+
+        svg.style.maxHeight =
+            "94%";
+
+        svg.style.width =
+            "auto";
+
+        svg.style.height =
+            "auto";
+
+    }
+
+
+    /*
+     * Calculate SVG size
+     */
+
+    const bytes =
+        new Blob(
+            [svgString],
+            {
+                type:
+                    "image/svg+xml"
+            }
+        ).size;
+
+
+    vectorSize.textContent =
+        formatBytes(bytes);
+
+}
+
+
+/* =====================================================
+   DOWNLOAD SVG
+===================================================== */
+
+downloadBtn.addEventListener(
+    "click",
+    downloadSVG
+);
+
+
+function downloadSVG() {
+
+    if (!currentSVG) {
+
+        return;
+
+    }
+
+
+    const blob =
+        new Blob(
+            [currentSVG],
+            {
+                type:
+                    "image/svg+xml;charset=utf-8"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    const originalName =
+        currentFile
+            ? currentFile.name
+                .replace(
+                    /\.[^/.]+$/,
+                    ""
+                )
+            : "textile-vector";
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        `${originalName}-vector.svg`;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    document.body.removeChild(
+        link
+    );
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+resetBtn.addEventListener(
+    "click",
+    resetApp
+);
+
+
+function resetApp() {
+
+    currentFile =
+        null;
+
+    currentImageDataURL =
+        null;
+
+    currentSVG =
+        null;
+
+
+    fileInput.value =
+        "";
+
+
+    originalPreview.classList.add(
+        "empty"
+    );
+
+
+    originalPreview.innerHTML = `
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                +
+            </div>
+
+            <p>
+                Upload an image
+            </p>
+
+        </div>
+
+    `;
+
+
+    vectorPreview.classList.add(
+        "empty"
+    );
+
+
+    vectorPreview.innerHTML = `
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ◇
+            </div>
+
+            <p>
+                Vector preview will appear here
+            </p>
+
+        </div>
+
+    `;
+
+
+    fileInfo.textContent =
+        "No image uploaded";
+
+
+    originalSize.textContent =
+        "—";
+
+
+    vectorSize.textContent =
+        "—";
+
+
+    vectorizeBtn.disabled =
+        true;
+
+
+    downloadBtn.disabled =
+        true;
+
+
+    progressContainer.classList.add(
+        "hidden"
+    );
+
+
+    showStatus(
+        "Ready"
+    );
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function showStatus(
+    message,
+    error = false
 ) {
 
-  if (
-    points.length < 3
-  ) {
-
-    return "";
-  }
+    processingStatus.textContent =
+        message;
 
 
-  /*
-    Midpoints between polygon points.
-  */
+    if (error) {
 
-  const midpoints = [];
+        processingStatus.style.background =
+            "#fff0f0";
 
+        processingStatus.style.color =
+            "#c0392b";
 
-  for (
-    let i = 0;
-    i < points.length;
-    i++
-  ) {
+    }
 
-    const next =
-      points[
-        (i + 1) %
-        points.length
-      ];
+    else {
 
+        processingStatus.style.background =
+            "#f1f2f4";
 
-    midpoints.push([
+        processingStatus.style.color =
+            "#62666d";
 
-      (
-        points[i][0] +
-        next[0]
-      ) / 2,
+    }
 
-      (
-        points[i][1] +
-        next[1]
-      ) / 2
-
-    ]);
-
-  }
+}
 
 
-  /*
-    Start at midpoint of
-    final -> first.
-  */
+/* =====================================================
+   PROGRESS
+===================================================== */
 
-  const lastMid =
-    midpoints[
-      midpoints.length - 1
+function setProgress(
+    value
+) {
+
+    progressBar.style.width =
+        `${value}%`;
+
+
+    progressText.textContent =
+        `${value}%`;
+
+}
+
+
+/* =====================================================
+   FILE SIZE
+===================================================== */
+
+function formatBytes(
+    bytes
+) {
+
+    if (
+        bytes === 0
+    ) {
+
+        return "0 B";
+
+    }
+
+
+    const units = [
+        "B",
+        "KB",
+        "MB",
+        "GB"
     ];
 
 
-  let d =
-    `M ${lastMid[0]} ${lastMid[1]}`;
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
 
 
-  for (
-    let i = 0;
-    i < points.length;
-    i++
-  ) {
+    return (
+        parseFloat(
+            (
+                bytes /
+                Math.pow(
+                    1024,
+                    index
+                )
+            ).toFixed(2)
+        )
+        +
+        " " +
+        units[index]
+    );
 
-    const control =
-      points[i];
-
-
-    const end =
-      midpoints[i];
-
-
-    d +=
-      ` Q ${control[0]} ${control[1]} ${end[0]} ${end[1]}`;
-
-  }
-
-
-  d += " Z";
-
-
-  return d;
 }
